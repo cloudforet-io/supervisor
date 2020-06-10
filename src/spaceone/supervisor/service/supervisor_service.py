@@ -51,6 +51,9 @@ class SupervisorService(BaseService):
                 'state': plugin_info['status'],
                 'endpoint': plugin_info['endpoint']
             }
+            if 'endpoints' in plugin_info:
+                plugin['endpoints'] = plugin_info['endpoint']
+
             result.append(plugin)
         params2 = params.copy()
         params2['plugin_info'] = result
