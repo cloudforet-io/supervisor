@@ -196,7 +196,8 @@ class SupervisorService(BaseService):
             'spaceone.supervisor.domain_id': params['domain_id'],
             'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
             'spaceone.supervisor.plugin.image': plugin_info.image,
-            'spaceone.supervisor.plugin.version': params['version']
+            'spaceone.supervisor.plugin.version': params['version'],
+            'spaceone.supervisor.plugin.service_type': plugin_info.service_type
         }
         # Determine port mapping
         host_port = self._supervisor_mgr.find_host_port()

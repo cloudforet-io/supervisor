@@ -36,6 +36,7 @@ class KubernetesConnector(ContainerConnector):
     def __init__(self, transaction, conf=None, **kwargs):
         super().__init__(transaction, conf, **kwargs)
         _LOGGER.debug("config: %s" % self.config)
+        self.headless = self.config.get('headless', False)
         self.NUM_OF_REPLICAS = 1
         self.namespace = self.config['namespace']
 
@@ -80,23 +81,12 @@ class KubernetesConnector(ContainerConnector):
         # {'8080/tcp': 80}    , expose 8080/tcp to 80 (public)
         _LOGGER.debug(f'[run] create kubernetes deployment')
 
-        service = self._create_service(labels, name, ports)
-        _LOGGER.debug(f'[run] service yml: {service}')
-        deployment = self._create_deployment(image, name, labels)
-        _LOGGER.debug(f'[run] deployment yml: {deployment}')
+        resp_svc = self._get_service(labels, name, ports)
+        resp_dep = self._get_deployment(labels, name, image)
 
-        # TODO: seperate Service & Deployment
         try:
-            # Create Service
-            k8s_core_v1 = client.CoreV1Api()
-            resp_svc = k8s_core_v1.create_namespaced_service(
-                    body=service, namespace=self.namespace)
-            _LOGGER.debug(f'[run] created service: {resp_svc}')
-
-            # Create Deployment
-            k8s_apps_v1 = client.AppsV1Api()
-            resp_dep = k8s_apps_v1.create_namespaced_deployment(
-                    body=deployment, namespace=self.namespace)
+            # Update endpoints, if needed
+            endpoints = self._update_endpoints(name)
 
             _LOGGER.debug(f'[run] created deployment: {resp_dep}')
             plugin = self._get_plugin_info_from_service(resp_svc)
@@ -130,8 +120,41 @@ class KubernetesConnector(ContainerConnector):
             # TODO
             raise ERROR_CONFIGURATION(key='docker configuration')
 
+    def _get_replica(self, service_type):
+        REPLICA_DIC = self.config.get('replica', {})
+        if service_type in REPLICA_DIC:
+            return REPLICA_DIC[service_type]
+        return self.NUM_OF_REPLICAS
+
+
     def _update_state_machine(self, status):
         return "ACTIVE"
+
+    def _get_deployment(self, labels, plugin_name, image):
+        """ Create or get Deployment
+
+        Args:
+            plugin_name: random generated name for service & deployment
+        """
+        k8s_apps_v1 = client.AppsV1Api()
+        try:
+            # get deployment
+            resp_dep = k8s_apps_v1.read_namespaced_deployment(
+                    name=name, namespace=self.namespace)
+            return resp_dep
+        except Exception as e:
+            _LOGGER.debug(f'[_get_deployment] may not found, {e}')
+
+        # Create Deployment
+        try:
+            deployment = self._create_deployment(image, plugin_name, labels)
+            resp_dep = k8s_apps_v1.create_namespaced_deployment(
+                    body=deployment, namespace=self.namespace)
+
+            return resp_dep
+        except Exception as e:
+            _LOGGER.debug(f'[_get_deployment] failed to create deployment, {e}')
+            raise ERROR_CONFIGURATION(key='kubernetes configuration')
 
     def _create_deployment(self, image, plugin_name, labels):
         """ Create deployment content (dictionary)
@@ -144,7 +167,7 @@ class KubernetesConnector(ContainerConnector):
             deployment(dict)
         """
         mgmt_labels = self._get_k8s_label(labels)
-
+        NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'])
         deployment = {
             'apiVersion': 'apps/v1',
             'kind': 'Deployment',
@@ -153,7 +176,7 @@ class KubernetesConnector(ContainerConnector):
                 'labels': mgmt_labels
                 },
             'spec': {
-                'replicas': self.NUM_OF_REPLICAS,
+                'replicas': NUM_OF_REPLICAS,
                 'selector': {
                     'matchLabels': mgmt_labels
                     },
@@ -174,18 +197,71 @@ class KubernetesConnector(ContainerConnector):
             }
         return deployment
 
+    def _update_endpoints(self, svc_name):
+        if self.headless == False:
+            # Do nothing
+            return
+        endpoints = self._get_endpoints(svc_name)
+        return endpoints
+
+    def _get_service(self, label, name, port):
+        """ Create or Get Service
+        Return: service object
+        """
+        k8s_core_v1 = client.CoreV1Api()
+        try:
+            # get service
+            resp_svc = k8s_core_v1.read_namespaced_service(name=name, namespace=self.namespace)
+            _LOGGER.debug(f'[run] found service: {resp_svc}')
+            return resp_svc
+        except Exception as e:
+            _LOGGER.debug(f'[_get_service] may be not found, {e}')
+
+        try:
+            # Create Service
+            service = self._create_service(label, name, port)
+            _LOGGER.debug(f'[run] service yml: {service}')
+            resp_svc = k8s_core_v1.create_namespaced_service(
+                    body=service, namespace=self.namespace)
+            _LOGGER.debug(f'[run] created service: {resp_svc}')
+            return resp_svc
+
+        except Exception as e:
+            _LOGGER.error(f"[run] Failed to create kubernetes Service")
+            _LOGGER.debug(e)
+            raise ERROR_CONFIGURATION(key='kubernetes configuration')
+
     def _create_service(self, labels, plugin_name, ports):
         """ Create Service content
 
         Returns:
             Service(dict)
         """
+        _LOGGER.debug(f'[_create_service] headless service: {self.headless}')
         mgmt_labels = self._get_k8s_label(labels)
         """  Example
             supervisor_name: root
             plugin_name: aws-ec2
+            service_type: inventory.collector
             domain_id: domain-1234
         """
+        if self.headless:
+            spec = {
+                'ports': [{
+                    'port': ports['HostPort'], 'targetPort': ports['TargetPort']
+                    }],
+                'selector': mgmt_labels,
+                'clusterIP': 'None'
+            }
+        else:
+            spec = {
+                'ports': [{
+                    'port': ports['HostPort'], 'targetPort': ports['TargetPort']
+                    }],
+                'selector': mgmt_labels
+            }
+
+
         service = {
             'apiVersion': 'v1',
             'kind': 'Service',
@@ -194,13 +270,8 @@ class KubernetesConnector(ContainerConnector):
                 'annotations': labels,
                 'labels': mgmt_labels
             },
-            'spec': {
-                'ports': [{
-                    'port': ports['HostPort'], 'targetPort': ports['TargetPort']
-                    }],
-                'selector': mgmt_labels
-            }
-            }
+            'spec': spec
+        }
         return service
 
     def _list_services(self, label):
@@ -268,6 +339,53 @@ class KubernetesConnector(ContainerConnector):
                 return False
         return result
 
+    def _get_endpoints(self, svc_name):
+        """ This will be different from service type
+        Headless Service: multiple endpoints
+        Service: single endpoint
+        """
+        def _parse_subsets(subsets):
+            addrs = []
+            port = None
+            endpoints = []
+            for subset in subsets:
+                addrs = _parse_endpoints(subset.addresses)
+                port = _parse_port(subset.ports)
+            for addr in addrs:
+                endpoint = f'grpc://{addr}:{port}'
+                endpoints.append(endpoint)
+            return endpoints
+
+        def _parse_endpoints(addresses):
+            """ Parse list of addresses
+            """
+            result = []
+            for address in addresses:
+                ip = address.ip
+                result.append(ip)
+            return result
+
+        def _parse_port(ports):
+            result = []
+            for port in ports:
+                svc_port = port.port
+                result.append(svc_port)
+            if len(result) == 1:
+                return result[0]
+
+        k8s_core_v1 = client.CoreV1Api()
+        try:
+            resp = k8s_core_v1.read_namespaced_endpoints(
+                    name=svc_name,
+                    namespace=self.namespace)
+            endpoints = _parse_subsets(resp.subsets)
+            _LOGGER.debug(f'[_get_endpoints] {endpoints}')
+            return endpoints
+        except Exception as e:
+            _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}')
+            return []
+
+
     def _get_plugin_info_from_service(self, service):
         """
         service is V1Service object, not dictionary
@@ -302,6 +420,11 @@ class KubernetesConnector(ContainerConnector):
             'name': service.metadata.name,
             'status': self._update_state_machine(service.status)
             }
+
+        if self.headless:
+            endpoints = self._get_endpoints(service.metadata.name)
+            plugin['endpoints'] = endpoints
+
         _LOGGER.debug(f'[_get_plugin_info_from_service] plugin: {plugin}')
         return plugin
 
@@ -310,7 +433,7 @@ class KubernetesConnector(ContainerConnector):
             labels = {
               spaceone.supervisor.name: root
               spaceone.supervisor.domain_id: domain-1234
-              spaceone.supervisor.plugin.endpoint: grpc://root-plugin-885ff2c52a6c.dev-supervisor.svc.cluster.local:50051
+              spaceone.supervisor.plugin.endpoint: grpc://random_string.dev-supervisor.svc.cluster.local:50051
               spaceone.supervisor.plugin.image: pyengine/aws-ec2
               spaceone.supervisor.plugin.version: 1.0
               spaceone.supervisor.plugin.plugin_name: aws-ec2
@@ -334,4 +457,6 @@ class KubernetesConnector(ContainerConnector):
                 mgmt_label['plugin_name'] = v
             elif k == 'spaceone.supervisor.plugin.version':
                 mgmt_label['version'] = v
+            elif k == 'spaceone.supervisor.plugin.service_type':
+                mgmt_label['service_type'] = v
         return mgmt_label
