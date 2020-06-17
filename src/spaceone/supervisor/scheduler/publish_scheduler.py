@@ -86,11 +86,14 @@ class PublishScheduler(IntervalScheduler):
             self.domain_id = _get_domain_id_from_token(self.token)
             return True
         except Exception as e:
-            _LOGGER.error(e)
-            raise ERROR_CONFIGURATION(key=e)
+            _LOGGER.error(f'[check_global_configuration] error: {e}')
+            return False
 
     def create_task(self):
-        self.check_global_configuration()
+        check = self.check_global_configuration()
+        if check == False:
+            return []
+
         metadata = {'token': self.token, 'domain_id': self.domain_id}
         publish_task = {
             'locator': 'SERVICE',
