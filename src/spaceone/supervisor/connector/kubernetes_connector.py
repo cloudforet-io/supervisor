@@ -308,7 +308,7 @@ class KubernetesConnector(ContainerConnector):
         # k,v = label.split("=")
         _LOGGER.debug(f'[_list_service] labels: {labels}')
         for item in resp.items:
-            if hasattr(item.metadata, 'annotations'):
+            if hasattr(item.metadata, 'annotations') and isinstance(item.metadata.annotations, dict):
                 annotations = item.metadata.annotations
             else:
                 annotations = {}
