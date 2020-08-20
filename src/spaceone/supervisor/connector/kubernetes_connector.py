@@ -33,8 +33,8 @@ MAX_COUNT = 300
 
 
 class KubernetesConnector(ContainerConnector):
-    def __init__(self, transaction, conf=None, **kwargs):
-        super().__init__(transaction, conf, **kwargs)
+    def __init__(self, transaction, config=None, **kwargs):
+        super().__init__(transaction, config, **kwargs)
         _LOGGER.debug("config: %s" % self.config)
         self.headless = self.config.get('headless', False)
         self.NUM_OF_REPLICAS = 1

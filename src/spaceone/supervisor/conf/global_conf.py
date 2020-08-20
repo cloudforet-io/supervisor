@@ -1,17 +1,26 @@
 CONNECTORS = {
     'PluginConnector': {
-        'endpoint': {
-            'v1': 'grpc://plugin:50051'
-        }
+#        'endpoint': {
+#            'v1': 'grpc://plugin:50051'
+#        }
     },
     'RepositoryConnector': {
-        'endpoint': {
-            'v1': 'grpc://repository:50051'
-        }
+#        'endpoint': {
+#            'v1': 'grpc://repository:50051'
+#        }
     },
     'DockerConnector': {
+#        "start_port": 50060,
+#        "end_port": 50090
     },
     'KubernetesConnector': {
+#        "start_port": 50060,
+#        "end_port": 50090,
+#        "namespace": "supervisor",
+#        "headless": True,
+#        "replica": {
+#            "inventory.collector": 4
+#        }
     }
 }
 
@@ -78,11 +87,11 @@ WORKERS = {
 NAME = ""
 HOSTNAME = ""
 BACKEND = "DockerConnector"
-PLUGIN = {
-    "backend": "DockerConnector",
-    "start_port": 50060,
-    "end_port": 50090
-}
+#PLUGIN = {
+#    "backend": "DockerConnector",
+#    "start_port": 50060,
+#    "end_port": 50090
+#}
 TAGS = {}
 
 # This is admin user token for this domain

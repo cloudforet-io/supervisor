@@ -28,16 +28,18 @@ class SupervisorManager(BaseManager):
     def __init__(self, transaction):
         super().__init__(transaction)
         # container API backend
-        self.plugin_conf = config.get_global('PLUGIN')
-        self.backend = self.plugin_conf['backend']
-        self.port_range = (self.plugin_conf['start_port'], self.plugin_conf['end_port'])
+        self.backend = config.get_global('BACKEND')
+        connectors_conf = config.get_global('CONNECTORS')
+        plugin_conf = connectors_conf[self.backend]
+        self.port_range = (plugin_conf['start_port'], plugin_conf['end_port'])
 
     def install_plugin(self, image_uri, labels, ports, name):
         """ Install Plugin
         """
         # determine connector name
         _LOGGER.debug(f'[install_plugin] image_uri: {image_uri}, labels: {labels}, ports: {ports}, name: {name}')
-        connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        #connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        connector = self.locator.get_connector(self.backend)
         r = connector.run(image_uri, labels, ports, name)
         return r
 
@@ -53,7 +55,8 @@ class SupervisorManager(BaseManager):
         target_plugins = self.list_plugins_by_label(labels)
         _LOGGER.debug(f'[delete_plugin] labels: {labels}, target: {target_plugins}')
         # determine connector
-        connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        #connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        connector = self.locator.get_connector(self.backend)
         deleted_count = 0
         for plugin in target_plugins['results']:
             _LOGGER.debug(f'[delete_plugin] plugin: {plugin}')
@@ -75,7 +78,8 @@ class SupervisorManager(BaseManager):
         """
         filters = {'label': label}
         try:
-            connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+            #connector = self.locator.get_connector(self.backend, self.plugin_conf)
+            connector = self.locator.get_connector(self.backend)
             data = connector.search(filters=filters)
             return data
         except Exception as e:
@@ -96,7 +100,8 @@ class SupervisorManager(BaseManager):
     def find_host_port(self):
         """ find host port for container port mapping
         """
-        connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        #connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
+        connector = self.locator.get_connector(self.backend)
         used_ports = connector.list_used_ports()
         _LOGGER.debug("Used ports list: %s" % used_ports)
         s, e = self.port_range
