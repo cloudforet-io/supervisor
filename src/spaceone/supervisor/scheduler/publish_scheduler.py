@@ -92,8 +92,8 @@ class PublishScheduler(IntervalScheduler):
     def create_task(self):
         check = self.check_global_configuration()
         if check == False:
+            _LOGGER.debug(f'[create_task] failed to check {check}')
             return []
-
         metadata = {'token': self.token, 'domain_id': self.domain_id}
         publish_task = {
             'locator': 'SERVICE',

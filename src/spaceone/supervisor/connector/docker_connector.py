@@ -31,8 +31,10 @@ MAX_COUNT = 180
 
 
 class DockerConnector(ContainerConnector):
-    def __init__(self, transaction, conf=None, **kwargs):
-        super().__init__(transaction, conf, **kwargs)
+    def __init__(self, transaction, config=None, **kwargs):
+        print("X" * 100)
+        print(kwargs)
+        super().__init__(transaction, config, **kwargs)
         _LOGGER.debug(f'[DockerConnector] config: {self.config}')
         try:
             self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
