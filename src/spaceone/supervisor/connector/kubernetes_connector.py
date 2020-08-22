@@ -20,7 +20,8 @@ import logging
 import time
 import yaml
 
-from kubernetes import client, config
+from kubernetes import client
+from kubernetes import config as k8s_config
 
 from spaceone.core.error import ERROR_CONFIGURATION
 
@@ -41,7 +42,7 @@ class KubernetesConnector(ContainerConnector):
         self.namespace = self.config['namespace']
 
         try:
-            config.load_incluster_config()
+            k8s_config.load_incluster_config()
             conf = client.Configuration()
             conf.proxy = "http://localhost:8080"
         except Exception as e:
