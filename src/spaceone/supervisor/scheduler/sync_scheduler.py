@@ -95,19 +95,6 @@ class SyncScheduler(IntervalScheduler):
             return []
 
         metadata = {'token': self.token, 'domain_id': self.domain_id}
-        publish_task = {
-            'locator': 'SERVICE',
-            'name': 'SupervisorService',
-            'metadata': metadata,
-            'method': 'publish_supervisor',
-            'params': {'params': {
-                            'name': self.name,
-                            'hostname': self.hostname,
-                            'tags': self.tags,
-                            'domain_id': self.domain_id
-                            }
-                       }
-        }
         sync_task = {
             'locator': 'SERVICE',
             'name': 'SupervisorService',
@@ -116,12 +103,14 @@ class SyncScheduler(IntervalScheduler):
             'params': {'params': {
                             'name': self.name,
                             'hostname': self.hostname,
+                            'tags': self.tags,
                             'domain_id': self.domain_id
                             }
                        }
         }
 
-        return [{'stages': [sync_task, publish_task]}]
+        #return [{'stages': [sync_task, publish_task]}]
+        return [{'stages': [sync_task]}]
 
 
 class Consul:
