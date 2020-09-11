@@ -1,3 +1,7 @@
+CACHES = {
+
+}
+
 CONNECTORS = {
     'PluginConnector': {
 #        'endpoint': {
@@ -40,46 +44,34 @@ HANDLERS = {
 
 # Define Queue options
 QUEUES = {
-#    'publish_q': {
+#    'default_q': {
 #        'backend': 'spaceone.core.queue.redis_queue.RedisQueue',
 #        'host': 'redis',
 #        'port': 6379,
-#        'channel': 'publish'
-#    },
-#    'update_q': {
-#        'backend': 'spaceone.core.queue.redis_queue.RedisQueue',
-#        'host': 'redis',
-#        'port': 6379,
-#        'channel': 'list_plugin'
+#        'channel': 'supervisor_queue'
 #    }
-    'default_q': {
-        'backend': 'spaceone.core.queue.redis_queue.RedisQueue',
-        'host': 'redis',
-        'port': 6379,
-        'channel': 'supervisor_queue'
-    }
 }
 
 # Define scheduler options
 SCHEDULERS = {
-    'publish': {
-        'backend': 'spaceone.supervisor.scheduler.publish_scheduler.PublishScheduler',
-        'queue': 'default_q',
-        'interval': 30
-    },
-    'sync': {
-        'backend': 'spaceone.supervisor.scheduler.sync_scheduler.SyncScheduler',
-        'queue': 'default_q',
-        'interval': 120
-    }
+#    'publish': {
+#        'backend': 'spaceone.supervisor.scheduler.publish_scheduler.PublishScheduler',
+#        'queue': 'default_q',
+#        'interval': 30
+#    },
+#    'sync': {
+#        'backend': 'spaceone.supervisor.scheduler.sync_scheduler.SyncScheduler',
+#        'queue': 'default_q',
+#        'interval': 120
+#    }
 }
 
 # Define worker options
 WORKERS = {
-    'worker': {
-        'backend': 'spaceone.core.scheduler.worker.BaseWorker',
-        'queue': 'default_q'
-        }
+#    'worker': {
+#        'backend': 'spaceone.core.scheduler.worker.BaseWorker',
+#        'queue': 'default_q'
+#        }
 }
 
 # This value should be global unique

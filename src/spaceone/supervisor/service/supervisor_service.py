@@ -7,12 +7,14 @@ from hashids import Hashids
 
 from spaceone.core.error import ERROR_CONFIGURATION
 from spaceone.core.service import *
+from spaceone.core import config, cache
 from spaceone.supervisor.error import ERROR_INSTALL_PLUGINS, ERROR_DELETE_PLUGINS
 from spaceone.supervisor.manager.supervisor_manager import SupervisorManager
 from spaceone.supervisor.manager.plugin_service_manager import PluginServiceManager
 
 _LOGGER = logging.getLogger(__name__)
 
+SUPERVISOR_SYNC_EXPIRE_TIME = 600
 
 @authentication_handler
 @authorization_handler
@@ -65,7 +67,7 @@ class SupervisorService(BaseService):
         return result_data
 
     @transaction
-    @check_required(['hostname','name', 'domain_id'])
+    @check_required(['hostname', 'name', 'domain_id'])
     def sync_plugins(self, params):
         """ Sync plugins from Plugin Service
         After sync, install plugins if not exist
@@ -74,17 +76,28 @@ class SupervisorService(BaseService):
             params (dict): {
               'hostname': str,
               'name': str,
+              'tags': dict,
               'domain_id': str
             }
         """
-
-        self._supervisor_mgr = self.locator.get_manager('SupervisorManager')
         # Parameter check
         supervisor_id = params.get('supervisor_id', None)
         hostname = params.get('hostname', None)
+        name = params.get('name', None)
         domain_id = params.get('domain_id', None)
 
+
+        # LOCK (after next sync)
+        # Drop if previous task is running
+        lock = self._get_lock(domain_id, name)
+        if lock:
+            _LOGGER.debug(f'[sync_plugins] running ... drop this task')
+            return False
+        self._set_lock(domain_id, name)
+
+        self._supervisor_mgr = self.locator.get_manager('SupervisorManager')
         if supervisor_id is None and hostname is None:
+            self._release_lock(domain_id, name)
             raise ERROR_CONFIGURATION(key='supervisor_id | hostname')
 
         # list plugins from plugin service
@@ -94,21 +107,24 @@ class SupervisorService(BaseService):
             num_of_plugins = plugins.total_count
             _LOGGER.debug(f'[sync_plugins] num of plugins: {num_of_plugins}')
         except Exception as e:
-            _LOGGER.debug(f'[sync_plugins] {e}')
+            _LOGGER.error(f'[sync_plugins] {e}')
+            self._release_lock(domain_id, name)
             return False
 
         print("XXXXXXXXXXXXXXXXXXXXXX Install XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         try:
             self._install_plugins(plugins.results, params)
         except Exception as e:
-            _LOGGER.debug(f'[sync_plugins] fail to install plugins, {e}')
+            _LOGGER.error(f'[sync_plugins] fail to install plugins, {e}')
+            self._release_lock(domain_id, name)
             raise ERROR_INSTALL_PLUGINS(plugins)
 
         print("XXXXXXXXXXXXXXXXXXXXX Clean-up XXXXXXXXXXXXXXXXXXXXXXXXXXX")
         try:
             self._delete_plugins(plugins.results, params)
         except Exception as e:
-            _LOGGER.debug(f'[sync_plugins] fail to delete plugins, {e}')
+            _LOGGER.error(f'[sync_plugins] fail to delete plugins, {e}')
+            self._release_lock(domain_id, name)
             raise ERROR_DELETE_PLUGINS(plugins=plugins)
 
         # Publish Again
@@ -117,6 +133,10 @@ class SupervisorService(BaseService):
             self.publish_supervisor(params)
         except Exception as e:
             _LOGGER.debug(f'[sync_plugins] fail to public {e}')
+            self._release_lock(domain_id, name)
+
+        self._release_lock(domain_id, name)
+        return True
 
     def _install_plugins(self, plugins, params):
         """ Install plugin based on plugins
@@ -252,6 +272,31 @@ class SupervisorService(BaseService):
         _LOGGER.debug(f'[discover_plugins] label: {label}')
         plugins = self._supervisor_mgr.list_plugins_by_label(label)
         return plugins
+
+
+    def _get_lock(self, domain_id, name):
+        try:
+            key = f"supervisor:{domain_id}:{name}"
+            return cache.get(key)
+        except Exception as e:
+            _LOGGER.debug(f'[_get_lock] {key}, {e}')
+            return False
+
+    def _set_lock(self, domain_id, name):
+        try:
+            key = f"supervisor:{domain_id}:{name}"
+            return cache.set(key, 1, expire=SUPERVISOR_SYNC_EXPIRE_TIME)
+        except Exception as e:
+            _LOGGER.debug(f'[_set_lock] {key}, {e}')
+            return False
+
+    def _release_lock(self, domain_id, name):
+        try:
+            key = f"supervisor:{domain_id}:{name}"
+            return cache.delete(key)
+        except Exception as e:
+            _LOGGER.debug(f'[_release_lock] {key}, {e}')
+            return False
 
 
 def _is_members(plugin_info, plugins_vo):
