@@ -31,7 +31,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # max second for status checking
 MAX_COUNT = 300
-
+WAIT_CREATION = 30
+ENDPOINT_INTERVAL = 10
 
 class KubernetesConnector(ContainerConnector):
     def __init__(self, transaction, config=None, **kwargs):
@@ -87,6 +88,7 @@ class KubernetesConnector(ContainerConnector):
 
         try:
             # Update endpoints, if needed
+            # Wait a little
             endpoints = self._update_endpoints(name)
 
             _LOGGER.debug(f'[run] created deployment: {resp_dep}')
@@ -152,6 +154,18 @@ class KubernetesConnector(ContainerConnector):
             resp_dep = k8s_apps_v1.create_namespaced_deployment(
                     body=deployment, namespace=self.namespace)
 
+            # create is asynchronous, wait a little
+            time.sleep(WAIT_CREATION)
+
+            # wait for max 5 minutes
+            wait_count = 0
+            while k8s_app_v1.read_namespaced_deployment(
+                name=name, namespace=self.namespace).status.available_replicas < 1:
+                time.sleep(10)
+                wait_count += 10
+                if wait_count > 300:
+                    _LOGGER.debug(f'[_get_deployment] too much time to create deployment: {plugin_name}, {image}')
+
             return resp_dep
         except Exception as e:
             _LOGGER.debug(f'[_get_deployment] failed to create deployment, {e}')
@@ -202,7 +216,14 @@ class KubernetesConnector(ContainerConnector):
         if self.headless == False:
             # Do nothing
             return
-        endpoints = self._get_endpoints(svc_name)
+        endpoints = []
+        wait_count = 0
+        while wait_count < 300:
+            endpoints = self._get_endpoints(svc_name)
+            if endpoints != []:
+                break
+            time.sleep(10)
+            wait_count += 10
         return endpoints
 
     def _get_service(self, label, name, port):
