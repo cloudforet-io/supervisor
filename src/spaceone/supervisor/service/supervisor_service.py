@@ -36,6 +36,7 @@ class SupervisorService(BaseService):
               - name
               - hostname
               - tags
+              - labels
               - secret_key
               - domain_id
 
@@ -76,7 +77,8 @@ class SupervisorService(BaseService):
             params (dict): {
               'hostname': str,
               'name': str,
-              'tags': dict,
+              'tags': list,
+              'labels': dict,
               'domain_id': str
             }
         """

@@ -84,7 +84,8 @@ BACKEND = "DockerConnector"
 #    "start_port": 50060,
 #    "end_port": 50090
 #}
-TAGS = {}
+TAGS = []
+LABLES = {}
 
 # This is admin user token for this domain
 # If you want remote TOKEN for security, use TOKEN_INFO instead of TOKEN
