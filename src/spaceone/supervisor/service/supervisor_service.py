@@ -113,6 +113,13 @@ class SupervisorService(BaseService):
             self._release_lock(domain_id, name)
             return False
 
+        print("XXXXXXXXXXXXXXXXXXXXXX Check Plugin State XXXXXXXXXXXXXXXXX")
+        # if plugin state == RE_PROVISION, delete first
+        try:
+            self._check_plugin_state(plugins.results, params)
+        except Exception as e:
+            _LOGGER.error(f'[sync_plugins] fail to check plugins, {e}')
+
         print("XXXXXXXXXXXXXXXXXXXXXX Install XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         try:
             self._install_plugins(plugins.results, params)
@@ -139,6 +146,25 @@ class SupervisorService(BaseService):
 
         self._release_lock(domain_id, name)
         return True
+
+    def _check_plugin_state(self, plugins, params):
+        """ Check plugin state first
+        if state == RE_PROVISIONING, delete plugin first
+        """
+        for plugin in plugins:
+            dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
+            dict_plugin.update(params)
+            state = dict_plugin.get('state', None)
+            _LOGGER.debug(f'[_check_plugin_state] plugin_info: {dict_plugin}')
+            if state == 'RE_PROVISIONING' or state == 'ERROR':
+                _LOGGER.debug(f'[_check_plugin_state] params: {params}')
+                self.install_plugin(dict_plugin)
+                delete_params = {
+                    'plugin_id': dict_plugin['plugin_id'],
+                    'version': dict_plugin['version'],
+                    'domain_id': dict_plugin['domain_id']
+                }
+                self.delete_plugin(delete_params)
 
     def _install_plugins(self, plugins, params):
         """ Install plugin based on plugins
