@@ -1,0 +1,85 @@
+{{- if .Values.enabled }}
+{{- if .Values.scheduler }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+{{ include "spaceone.labels" . | indent 4 }}
+    spaceone.service: {{ .Values.name }}
+  name: {{ .Values.name }}-scheduler
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      spaceone.service: {{ .Values.name }}-scheduler
+  template:
+    metadata:
+      annotations:
+        spaceone.deployment.tool: helm
+        spaceone.application-flag: {{ print .Values.application_scheduler | sha256sum }}
+      labels:
+{{ include "spaceone.labels" . | indent 8 }}
+        spaceone.service: {{ .Values.name }}-scheduler
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.gracePeriod }}
+      containers:
+        - name: kubectl-proxy
+          image: spaceone/kubectl-proxy:latest
+          ports:
+            - containerPort: 8080
+
+        - name: redis
+          image: redis
+          ports:
+            - containerPort: 6379
+
+        - name: {{ .Values.name }}-scheduler
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.version }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: ['spaceone', 'scheduler', 'spaceone.{{ .Values.name }}']
+          volumeMounts:
+            - name: default-conf
+              mountPath: /opt/spaceone/{{ .Values.name }}/config/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: timezone
+              mountPath: /etc/localtime
+            - name: log-volume
+              mountPath: /var/log/spaceone
+            - name: application-conf
+              mountPath: /opt/spaceone/{{ .Values.name }}/config/application.yaml
+              subPath: application.yaml
+              readOnly: true
+          env:
+            - name: SPACEONE_CONFIG_FILE
+              value: /opt/spaceone/{{ .Values.name }}/config/config.yaml
+
+
+{{- if .Values.sidecar }}
+{{- toYaml .Values.sidecar | nindent 8 }}
+{{- end }}
+
+{{- if .Values.global.supervisor.sidecar }}
+{{- toYaml .Values.global.supervisor.sidecar | nindent 8 }}
+{{- end }}
+
+      volumes:
+        - name: default-conf 
+          configMap:
+            name: {{ .Values.name }}-conf
+        - name: application-conf
+          configMap:
+            name: {{ .Values.name }}-application-scheduler-conf
+
+{{- if .Values.volumes }}
+{{- toYaml .Values.volumes | nindent 8 }}
+{{- end }}
+
+{{- if .Values.global.supervisor.volumes }}
+{{- toYaml .Values.global.supervisor.volumes | nindent 8 }}
+{{- end }}
+
+{{- end }}
+{{- end }}

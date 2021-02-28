@@ -1,0 +1,35 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
+  name: supervisor-plugin-control-role
+rules:
+- apiGroups: ["*"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+  resources: ["replicaSets", "pods", "deployments", "services", "endpoints"]
+
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supervisor
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
+
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: supervisor-role-binding
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: supervisor-plugin-control-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
+
