@@ -1,0 +1,72 @@
+###############################
+# DEFAULT 
+###############################
+enabled: true
+developer: false
+scheduler: true
+worker: false
+namespace: root-supervisor
+name: supervisor
+replicas: 1
+image:
+    repository: spaceone
+    name: supervisor
+    version: latest
+imagePullPolicy: IfNotPresent
+
+# Overwrite database
+database: {}
+
+# Overwrite application config
+#application: {}
+
+# Overwrite scheduler config
+#application_scheduler: {}
+application_scheduler:
+    NAME: root
+    HOSTNAME: root-supervisor.root
+    BACKEND: KubernetesConnector
+    CONNECTORS:
+        RepositoryConnector:
+            endpoint:
+                v1: grpc://repository.spaceone.svc.cluster.local:50051
+        PluginConnector:
+            endpoint:
+                v1: grpc://plugin.spaceone.svc.cluster.local:50051
+        KubernetesConnector:
+            namespace: root-supervisor
+            start_port: 50051
+            end_port: 50052
+            headless: true
+            replica:
+                inventory.Collector: 1
+    TOKEN_INFO:
+        protocol: consul
+        config:
+            host: consul.spaceone.svc.cluster.local
+        uri: debug/supervisor/TOKEN
+# Overwrite worker config
+application_worker: {}
+# local sidecar
+##########################
+#sidecar:
+
+
+##########################
+# Local volumes
+##########################
+volumes:
+    - name: timezone
+      hostPath:
+          path: /usr/share/zoneinfo/Asia/Seoul
+    - name: log-volume
+      emptyDir: {}
+
+#######################
+# global variable
+#######################
+global:
+    shared: {}
+    supervisor:
+        sidecar: []
+        volumes: []
