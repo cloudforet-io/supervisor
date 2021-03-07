@@ -9,8 +9,7 @@ namespace: root-supervisor
 name: supervisor
 replicas: 1
 image:
-    repository: spaceone
-    name: supervisor
+    name: spaceone/supervisor
     version: latest
 imagePullPolicy: IfNotPresent
 
