@@ -1,36 +1,36 @@
 {{- if .Values.enabled }}
-{{- if .Values.scheduler }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
 {{ include "spaceone.labels" . | indent 4 }}
     spaceone.service: {{ .Values.name }}
-  name: {{ .Values.name }}-scheduler
+  name: {{ .Values.name }}
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      spaceone.service: {{ .Values.name }}-scheduler
+      spaceone.service: {{ .Values.name }}
   template:
     metadata:
       annotations:
         spaceone.deployment.tool: helm
         spaceone.database-flag: {{ print .Values.database | sha256sum }}
         spaceone.shared-flag: {{ print .Values.global.shared | sha256sum }}
-        spaceone.application-flag: {{ print .Values.application_scheduler | sha256sum }}
+        spaceone.application-flag: {{ print .Values.application | sha256sum }}
       labels:
 {{ include "spaceone.labels" . | indent 8 }}
-        spaceone.service: {{ .Values.name }}-scheduler
+        spaceone.service: {{ .Values.name }}
     spec:
       terminationGracePeriodSeconds: {{ .Values.gracePeriod }}
       containers:
-        - name: {{ .Values.name }}-scheduler
+        - name: {{ .Values.name }}
           image: {{ .Values.image.name }}:{{ .Values.image.version }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          command: ['spaceone', 'scheduler', 'spaceone.{{ regexReplaceAll "-" .Values.name "_" }}']
+          ports:
+            - containerPort: 50051
           volumeMounts:
             - name: default-conf
               mountPath: /opt/spaceone/{{ .Values.name }}/config/config.yaml
@@ -76,7 +76,7 @@ spec:
             name: shared-conf
         - name: application-conf
           configMap:
-            name: {{ .Values.name }}-application-scheduler-conf
+            name: {{ .Values.name }}-application-conf
 
 {{- if .Values.volumes }}
 {{- toYaml .Values.volumes | nindent 8 }}
@@ -86,5 +86,4 @@ spec:
 {{- toYaml .Values.global.backend.volumes | nindent 8 }}
 {{- end }}
 
-{{- end }}
 {{- end }}
