@@ -7,7 +7,7 @@ metadata:
 {{ include "spaceone.labels" . | indent 4 }}
     spaceone.service: {{ .Values.name }}
   name: {{ .Values.name }}-scheduler
-  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -18,8 +18,6 @@ spec:
     metadata:
       annotations:
         spaceone.deployment.tool: helm
-        spaceone.database-flag: {{ print .Values.database | sha256sum }}
-        spaceone.shared-flag: {{ print .Values.global.shared | sha256sum }}
         spaceone.application-flag: {{ print .Values.application_scheduler | sha256sum }}
       labels:
 {{ include "spaceone.labels" . | indent 8 }}
@@ -27,10 +25,20 @@ spec:
     spec:
       terminationGracePeriodSeconds: {{ .Values.gracePeriod }}
       containers:
+        - name: kubectl-proxy
+          image: spaceone/kubectl-proxy:latest
+          ports:
+            - containerPort: 8080
+
+        - name: redis
+          image: redis
+          ports:
+            - containerPort: 6379
+
         - name: {{ .Values.name }}-scheduler
-          image: {{ .Values.image.name }}:{{ .Values.image.version }}
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.version }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          command: ['spaceone', 'scheduler', 'spaceone.{{ regexReplaceAll "-" .Values.name "_" }}']
+          command: ['spaceone', 'scheduler', 'spaceone.{{ .Values.name }}']
           volumeMounts:
             - name: default-conf
               mountPath: /opt/spaceone/{{ .Values.name }}/config/config.yaml
@@ -40,14 +48,6 @@ spec:
               mountPath: /etc/localtime
             - name: log-volume
               mountPath: /var/log/spaceone
-            - name: database-conf
-              mountPath: /opt/spaceone/{{ .Values.name }}/config/database.yaml
-              subPath: database.yaml
-              readOnly: true
-            - name: shared-conf
-              mountPath: /opt/spaceone/{{ .Values.name }}/config/shared.yaml
-              subPath: shared.yaml
-              readOnly: true
             - name: application-conf
               mountPath: /opt/spaceone/{{ .Values.name }}/config/application.yaml
               subPath: application.yaml
@@ -56,24 +56,19 @@ spec:
             - name: SPACEONE_CONFIG_FILE
               value: /opt/spaceone/{{ .Values.name }}/config/config.yaml
 
+
 {{- if .Values.sidecar }}
 {{- toYaml .Values.sidecar | nindent 8 }}
 {{- end }}
 
-{{- if .Values.global.backend.sidecar }}
-{{- toYaml .Values.global.backend.sidecar | nindent 8 }}
+{{- if .Values.global.supervisor.sidecar }}
+{{- toYaml .Values.global.supervisor.sidecar | nindent 8 }}
 {{- end }}
 
       volumes:
         - name: default-conf 
           configMap:
             name: {{ .Values.name }}-conf
-        - name: database-conf
-          configMap:
-            name: {{ .Values.name }}-database-conf
-        - name: shared-conf
-          configMap:
-            name: shared-conf
         - name: application-conf
           configMap:
             name: {{ .Values.name }}-application-scheduler-conf
@@ -82,8 +77,8 @@ spec:
 {{- toYaml .Values.volumes | nindent 8 }}
 {{- end }}
 
-{{- if .Values.global.backend.volumes }}
-{{- toYaml .Values.global.backend.volumes | nindent 8 }}
+{{- if .Values.global.supervisor.volumes }}
+{{- toYaml .Values.global.supervisor.volumes | nindent 8 }}
 {{- end }}
 
 {{- end }}

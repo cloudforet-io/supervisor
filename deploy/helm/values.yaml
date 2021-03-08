@@ -39,11 +39,11 @@ application_scheduler:
             headless: true
             replica:
                 inventory.Collector: 1
-    TOKEN_INFO:
-        protocol: consul
-        config:
-            host: consul.spaceone.svc.cluster.local
-        uri: debug/supervisor/TOKEN
+#    TOKEN_INFO:
+#        protocol: consul
+#        config:
+#            host: consul.spaceone.svc.cluster.local
+#        uri: debug/supervisor/TOKEN
 # Overwrite worker config
 application_worker: {}
 # local sidecar
