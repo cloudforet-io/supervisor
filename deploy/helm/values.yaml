@@ -66,6 +66,7 @@ volumes:
 #######################
 global:
     shared: {}
+    supervisor_namespace: root-supervisor
     supervisor:
         sidecar: []
         volumes: []

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.name }}-application-scheduler-conf
-  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  namespace: {{ .Values.global.supervisor_namespace | default .Release.Namespace }}
   annotations:
     spaceone.auto-deploy-flag: {{ print .Values.application_scheduler | sha256sum }}
 data:
