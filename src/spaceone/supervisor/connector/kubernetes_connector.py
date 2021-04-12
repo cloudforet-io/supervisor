@@ -184,7 +184,11 @@ class KubernetesConnector(ContainerConnector):
             deployment(dict)
         """
         mgmt_labels = self._get_k8s_label(labels)
-        NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'])
+        if plugin_name in mgmt_labels:
+            plugin_name = mgmt_labels['plugin_name']
+            NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'], plugin_name)
+        else:
+            NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'])
         deployment = {
             'apiVersion': 'apps/v1',
             'kind': 'Deployment',
@@ -206,7 +210,7 @@ class KubernetesConnector(ContainerConnector):
                         'containers': [{
                             'image': image,
                             'name': plugin_name,
-                            'imagePullPolicy': 'Always'
+                            'imagePullPolicy': 'IfNotPresent'
                             }]
                         }
                     }
