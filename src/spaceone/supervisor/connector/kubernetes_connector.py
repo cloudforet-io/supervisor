@@ -123,8 +123,10 @@ class KubernetesConnector(ContainerConnector):
             # TODO
             raise ERROR_CONFIGURATION(key='docker configuration')
 
-    def _get_replica(self, service_type):
+    def _get_replica(self, service_type, plugin_name=None):
         REPLICA_DIC = self.config.get('replica', {})
+        if plugin_name:
+            service_type = f'{service_type}?{plugin_name}'
         if service_type in REPLICA_DIC:
             return REPLICA_DIC[service_type]
         return self.NUM_OF_REPLICAS
