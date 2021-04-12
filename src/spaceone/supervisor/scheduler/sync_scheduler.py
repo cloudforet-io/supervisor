@@ -65,8 +65,8 @@ class SyncScheduler(IntervalScheduler):
         try:
             self.name = config.get_global('NAME')
             self.hostname = config.get_global('HOSTNAME')
-            self.tags = config.get_global('TAGS')
-            self.labels = config.get_global('LABELS')
+            self.tags = config.get_global('TAGS', {})
+            self.labels = config.get_global('LABELS', {})
             self.plugin_config = config.get_global('PLUGIN')
             self.token = config.get_global('TOKEN')
             if self.token == "":
@@ -81,10 +81,6 @@ class SyncScheduler(IntervalScheduler):
             if self.hostname == "":
                 _LOGGER.error("hostname is not configured!")
                 raise ERROR_CONFIGURATION(key='HOSTNAME')
-            if self.tags == []:
-                _LOGGER.warn("TAGS is not configured!")
-            if self.labels == {}:
-                _LOGGER.warn("LABELS is not configured!")
 
             self.domain_id = _get_domain_id_from_token(self.token)
             return True
