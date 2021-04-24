@@ -25,6 +25,10 @@ CONNECTORS = {
 #        "replica": {
 #            "inventory.collector": 4
 #        }
+#
+#        "nodeSelector": {
+#             "Category": "supervisor"
+#        }
     }
 }
 

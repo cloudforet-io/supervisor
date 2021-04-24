@@ -264,7 +264,7 @@ class SupervisorService(BaseService):
         ports = {'HostPort': host_port, 'TargetPort': target_port}
 
         # container name(This will reduce duplicated container)
-        name = _create_unique_name()
+        name = f'{plugin_id}-{_create_unique_name()}'
         # Update plugin endpoint
         endpoint = self._supervisor_mgr.get_plugin_endpoint(name, params['hostname'], host_port)
         labels.update({'spaceone.supervisor.plugin.endpoint': endpoint})
