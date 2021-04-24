@@ -39,6 +39,7 @@ class KubernetesConnector(ContainerConnector):
         super().__init__(transaction, config, **kwargs)
         _LOGGER.debug("config: %s" % self.config)
         self.headless = self.config.get('headless', False)
+        self.node_selector = self.config.get('nodeSelector', {})
         self.NUM_OF_REPLICAS = 1
         self.namespace = self.config['namespace']
 
@@ -127,6 +128,7 @@ class KubernetesConnector(ContainerConnector):
         REPLICA_DIC = self.config.get('replica', {})
         if plugin_name:
             service_type = f'{service_type}?{plugin_name}'
+        _LOGGER.debug(f'[_get_replica] service_type: {service_type}, plugin_name: {plugin_name}')
         if service_type in REPLICA_DIC:
             return REPLICA_DIC[service_type]
         return self.NUM_OF_REPLICAS
@@ -135,11 +137,11 @@ class KubernetesConnector(ContainerConnector):
     def _update_state_machine(self, status):
         return "ACTIVE"
 
-    def _get_deployment(self, labels, plugin_name, image):
+    def _get_deployment(self, labels, name, image):
         """ Create or get Deployment
 
         Args:
-            plugin_name: random generated name for service & deployment
+            name: random generated name for service & deployment
         """
         k8s_apps_v1 = client.AppsV1Api()
         try:
@@ -152,7 +154,7 @@ class KubernetesConnector(ContainerConnector):
 
         # Create Deployment
         try:
-            deployment = self._create_deployment(image, plugin_name, labels)
+            deployment = self._create_deployment(image, name, labels)
             resp_dep = k8s_apps_v1.create_namespaced_deployment(
                     body=deployment, namespace=self.namespace)
 
@@ -166,14 +168,14 @@ class KubernetesConnector(ContainerConnector):
                 time.sleep(10)
                 wait_count += 10
                 if wait_count > 300:
-                    _LOGGER.debug(f'[_get_deployment] too much time to create deployment: {plugin_name}, {image}')
+                    _LOGGER.debug(f'[_get_deployment] too much time to create deployment: {name}, {image}')
 
             return resp_dep
         except Exception as e:
             _LOGGER.debug(f'[_get_deployment] failed to create deployment, {e}')
             raise ERROR_CONFIGURATION(key='kubernetes configuration')
 
-    def _create_deployment(self, image, plugin_name, labels):
+    def _create_deployment(self, image, name, labels):
         """ Create deployment content (dictionary)
 
         Args:
@@ -184,7 +186,8 @@ class KubernetesConnector(ContainerConnector):
             deployment(dict)
         """
         mgmt_labels = self._get_k8s_label(labels)
-        if plugin_name in mgmt_labels:
+        _LOGGER.debug(f'mgmt_labels: {mgmt_labels}')
+        if 'plugin_name' in mgmt_labels:
             plugin_name = mgmt_labels['plugin_name']
             NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'], plugin_name)
         else:
@@ -193,7 +196,7 @@ class KubernetesConnector(ContainerConnector):
             'apiVersion': 'apps/v1',
             'kind': 'Deployment',
             'metadata': {
-                'name': plugin_name,
+                'name': name,
                 'labels': mgmt_labels
                 },
             'spec': {
@@ -203,15 +206,16 @@ class KubernetesConnector(ContainerConnector):
                     },
                 'template': {
                     'metadata': {
-                        'name': plugin_name,
+                        'name': name,
                         'labels': mgmt_labels
                         },
                     'spec': {
                         'containers': [{
                             'image': image,
-                            'name': plugin_name,
+                            'name': name,
                             'imagePullPolicy': 'IfNotPresent'
-                            }]
+                            }],
+                        'nodeSelector': self.node_selector
                         }
                     }
                 }
@@ -259,7 +263,7 @@ class KubernetesConnector(ContainerConnector):
             _LOGGER.debug(e)
             raise ERROR_CONFIGURATION(key='kubernetes configuration')
 
-    def _create_service(self, labels, plugin_name, ports):
+    def _create_service(self, labels, name, ports):
         """ Create Service content
 
         Returns:
@@ -294,7 +298,7 @@ class KubernetesConnector(ContainerConnector):
             'apiVersion': 'v1',
             'kind': 'Service',
             'metadata': {
-                'name': plugin_name,
+                'name': name,
                 'annotations': labels,
                 'labels': mgmt_labels
             },
