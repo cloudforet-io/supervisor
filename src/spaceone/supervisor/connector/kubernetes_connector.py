@@ -316,7 +316,6 @@ class KubernetesConnector(ContainerConnector):
         In K8S service, we put label at Annotation like
 
         Labels:            name: root
-                           plugin_name: aws-ec2
                            pluigin_id: plugin-885ff2c52a6c
 
         Annotations:       spaceone.supervisor.name: root
@@ -468,7 +467,6 @@ class KubernetesConnector(ContainerConnector):
               spaceone.supervisor.plugin.endpoint: grpc://random_string.dev-supervisor.svc.cluster.local:50051
               spaceone.supervisor.plugin.image: pyengine/aws-ec2
               spaceone.supervisor.plugin.version: 1.0
-              spaceone.supervisor.plugin.plugin_name: aws-ec2
               spaceone.supervisor.plugin_id: plugin-885ff2c52a6c
             }
 
@@ -485,8 +483,6 @@ class KubernetesConnector(ContainerConnector):
                 mgmt_label['supervisor_name'] = v
             elif k == 'spaceone.supervisor.domain_id':
                 mgmt_label['domain_id'] = v
-            elif k == 'spaceone.supervisor.plugin.plugin_name':
-                mgmt_label['plugin_name'] = v
             elif k == 'spaceone.supervisor.plugin.version':
                 mgmt_label['version'] = v
             elif k == 'spaceone.supervisor.plugin.service_type':

@@ -247,7 +247,7 @@ class SupervisorService(BaseService):
             'spaceone.supervisor.name': params['name'],
             'spaceone.supervisor.plugin_id': params['plugin_id'],
             'spaceone.supervisor.domain_id': params['domain_id'],
-            'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
+            #'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
             'spaceone.supervisor.plugin.image': plugin_info.image,
             'spaceone.supervisor.plugin.version': params['version'],
             'spaceone.supervisor.plugin.service_type': plugin_info.service_type
