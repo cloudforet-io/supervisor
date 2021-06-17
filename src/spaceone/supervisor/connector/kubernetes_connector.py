@@ -473,7 +473,7 @@ class KubernetesConnector(ContainerConnector):
             Returns: mgmt_label (dict)
                 {
                     supervisor_name: root
-                    plugin_name: aws-ec2
+                    plugin_id: plugin-aws-ec2
                     domain_id: domain-1234
                 }
         """
@@ -483,6 +483,8 @@ class KubernetesConnector(ContainerConnector):
                 mgmt_label['supervisor_name'] = v
             elif k == 'spaceone.supervisor.domain_id':
                 mgmt_label['domain_id'] = v
+            elif k == 'spaceone.supervisor.plugin.plugin_id':
+                mgmt_label['plugin_id'] = v
             elif k == 'spaceone.supervisor.plugin.version':
                 mgmt_label['version'] = v
             elif k == 'spaceone.supervisor.plugin.service_type':
