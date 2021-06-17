@@ -483,7 +483,7 @@ class KubernetesConnector(ContainerConnector):
                 mgmt_label['supervisor_name'] = v
             elif k == 'spaceone.supervisor.domain_id':
                 mgmt_label['domain_id'] = v
-            elif k == 'spaceone.supervisor.plugin.plugin_id':
+            elif k == 'spaceone.supervisor.plugin_id':
                 mgmt_label['plugin_id'] = v
             elif k == 'spaceone.supervisor.plugin.version':
                 mgmt_label['version'] = v
