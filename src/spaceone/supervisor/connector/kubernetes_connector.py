@@ -65,6 +65,12 @@ class KubernetesConnector(ContainerConnector):
         count = len(services)
         for service in services:
             plugin = self._get_plugin_info_from_service(service)
+
+            if self.headless:
+                endpoints = plugin.get('endpoints', [])
+                if len(endpoints) == 0:
+                    continue
+
             plugins_info.append(plugin)
 
         return {'results': plugins_info, 'total_count': count}
@@ -89,7 +95,7 @@ class KubernetesConnector(ContainerConnector):
         try:
             # Update endpoints, if needed
             # Wait a little
-            endpoints = self._update_endpoints(name)
+            # endpoints = self._update_endpoints(name)
 
             _LOGGER.debug(f'[run] created deployment: {resp_dep}')
             plugin = self._get_plugin_info_from_service(resp_svc)
@@ -142,8 +148,7 @@ class KubernetesConnector(ContainerConnector):
         k8s_apps_v1 = client.AppsV1Api()
         try:
             # get deployment
-            resp_dep = k8s_apps_v1.read_namespaced_deployment(
-                    name=name, namespace=self.namespace)
+            resp_dep = k8s_apps_v1.read_namespaced_deployment(name=plugin_name, namespace=self.namespace)
             return resp_dep
         except Exception as e:
             _LOGGER.debug(f'[_get_deployment] may not found, {e}')
@@ -159,8 +164,7 @@ class KubernetesConnector(ContainerConnector):
 
             # wait for max 5 minutes
             wait_count = 0
-            while k8s_app_v1.read_namespaced_deployment(
-                name=name, namespace=self.namespace).status.available_replicas < 1:
+            while k8s_app_v1.read_namespaced_deployment(name=plugin_name, namespace=self.namespace).status.available_replicas < 1:
                 time.sleep(10)
                 wait_count += 10
                 if wait_count > 300:
