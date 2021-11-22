@@ -70,3 +70,15 @@ global:
     supervisor:
         sidecar: []
         volumes: []
+
+####################################
+# pod spec (append more pod spec)
+# example nodeSelect
+#
+# pod:
+#   spec:
+#     nodeSelector:
+#       application: my-node-group
+####################################
+pod:
+    spec: {}
