@@ -23,6 +23,9 @@ spec:
 {{ include "spaceone.labels" . | indent 8 }}
         spaceone.service: {{ .Values.name }}-scheduler
     spec:
+{{- if .Values.global.serviceAccountName }}
+      serviceAccountName: {{ .Values.global.serviceAccountName }}
+{{- end }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod }}
       containers:
         - name: kubectl-proxy
