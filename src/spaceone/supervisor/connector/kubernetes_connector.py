@@ -42,6 +42,7 @@ class KubernetesConnector(ContainerConnector):
         self.node_selector = self.config.get('nodeSelector', {})
         self.NUM_OF_REPLICAS = 1
         self.namespace = self.config['namespace']
+        self.service_account = self.config.get('service_account')
 
         try:
             k8s_config.load_incluster_config()
@@ -110,7 +111,7 @@ class KubernetesConnector(ContainerConnector):
             raise ERROR_CONFIGURATION(key='kubernetes create')
 
     def stop(self, plugin):
-        # TODO: seperate Service & Deployment
+        # TODO: seperated Service & Deployment
         try:
             name = plugin['name']
             # delete_namespaced_service
@@ -130,15 +131,14 @@ class KubernetesConnector(ContainerConnector):
             # TODO
             raise ERROR_CONFIGURATION(key='docker configuration')
 
-    def _get_replica(self, service_type, plugin_name=None):
+    def _get_replica(self, service_type, plugin_id=None):
         REPLICA_DIC = self.config.get('replica', {})
-        if plugin_name:
-            service_type = f'{service_type}?{plugin_name}'
-        _LOGGER.debug(f'[_get_replica] service_type: {service_type}, plugin_name: {plugin_name}')
+        if plugin_id:
+            service_type = f'{service_type}?{plugin_id}'
+        _LOGGER.debug(f'[_get_replica] service_type: {service_type}, plugin_id: {plugin_id}')
         if service_type in REPLICA_DIC:
             return REPLICA_DIC[service_type]
         return self.NUM_OF_REPLICAS
-
 
     def _update_state_machine(self, status):
         return "ACTIVE"
@@ -168,7 +168,7 @@ class KubernetesConnector(ContainerConnector):
 
             # wait for max 5 minutes
             wait_count = 0
-            while k8s_app_v1.read_namespaced_deployment(name=name, namespace=self.namespace).status.available_replicas < 1:
+            while k8s_apps_v1.read_namespaced_deployment(name=name, namespace=self.namespace).status.available_replicas < 1:
                 time.sleep(10)
                 wait_count += 10
                 if wait_count > 300:
@@ -191,9 +191,9 @@ class KubernetesConnector(ContainerConnector):
         """
         mgmt_labels = self._get_k8s_label(labels)
         _LOGGER.debug(f'mgmt_labels: {mgmt_labels}')
-        if 'plugin_name' in mgmt_labels:
-            plugin_name = mgmt_labels['plugin_name']
-            NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'], plugin_name)
+        if 'plugin_id' in mgmt_labels:
+            plugin_id = mgmt_labels['plugin_id']
+            NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'], plugin_id)
         else:
             NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'])
         deployment = {
@@ -224,6 +224,10 @@ class KubernetesConnector(ContainerConnector):
                     }
                 }
             }
+
+        if self.service_account:
+            deployment['spec']['serviceAccountName'] = self.service_account
+
         return deployment
 
     def _update_endpoints(self, svc_name):
@@ -296,7 +300,6 @@ class KubernetesConnector(ContainerConnector):
                     }],
                 'selector': mgmt_labels
             }
-
 
         service = {
             'apiVersion': 'v1',
