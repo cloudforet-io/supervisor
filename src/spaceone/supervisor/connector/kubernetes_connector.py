@@ -60,7 +60,7 @@ class KubernetesConnector(ContainerConnector):
             services = self._list_services(filters['label'])
         else:
             services = []
-        _LOGGER.debug(services)
+        # _LOGGER.debug(services)
         count = len(services)
         for service in services:
             plugin = self._get_plugin_info_from_service(service)
@@ -96,7 +96,7 @@ class KubernetesConnector(ContainerConnector):
             # Wait a little
             # endpoints = self._update_endpoints(name)
 
-            _LOGGER.debug(f'[run] created deployment: {resp_dep}')
+            # _LOGGER.debug(f'[run] created deployment: {resp_dep}')
             plugin = self._get_plugin_info_from_service(resp_svc)
 
             _LOGGER.debug(f'[run] plugin: {plugin}')
@@ -419,7 +419,6 @@ class KubernetesConnector(ContainerConnector):
         except Exception as e:
             _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}')
             return []
-
 
     def _get_plugin_info_from_service(self, service):
         """
