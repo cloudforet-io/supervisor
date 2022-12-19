@@ -45,7 +45,8 @@ class SupervisorService(BaseService):
         result = self.discover_plugins(params['name'])
         plugins_info = result['results']
         count = result['total_count']
-        _LOGGER.debug(f'[publish_supervisor] plugins_info: {plugins_info}, count: {count}')
+        # _LOGGER.debug(f'[publish_supervisor] plugins_info: {plugins_info}, count: {count}')
+        _LOGGER.debug(f'[publish_supervisor] count: {count}')
         result = []
         for plugin_info in plugins_info:
             plugin = {
@@ -63,7 +64,7 @@ class SupervisorService(BaseService):
         params2 = params.copy()
         params2['plugin_info'] = result
 
-        _LOGGER.debug(f'[publish_supervisor] params: {params2}')
+        # _LOGGER.debug(f'[publish_supervisor] params: {params2}')
         result_data = self._plugin_service_mgr.publish_supervisor(params2)
         return result_data
 
