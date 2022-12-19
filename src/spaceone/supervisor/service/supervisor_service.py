@@ -88,7 +88,6 @@ class SupervisorService(BaseService):
         name = params.get('name', None)
         domain_id = params.get('domain_id', None)
 
-
         # LOCK (after next sync)
         # Drop if previous task is running
         lock = self._get_lock(domain_id, name)

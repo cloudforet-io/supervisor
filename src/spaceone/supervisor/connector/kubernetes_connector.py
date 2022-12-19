@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   Copyright 2020 The SpaceONE Authors.
 #
@@ -18,8 +17,6 @@ __all__ = ["KubernetesConnector"]
 
 import logging
 import time
-import yaml
-
 from kubernetes import client
 from kubernetes import config as k8s_config
 
@@ -63,7 +60,7 @@ class KubernetesConnector(ContainerConnector):
             services = self._list_services(filters['label'])
         else:
             services = []
-        _LOGGER.debug(services)
+        # _LOGGER.debug(services)
         count = len(services)
         for service in services:
             plugin = self._get_plugin_info_from_service(service)
@@ -99,7 +96,7 @@ class KubernetesConnector(ContainerConnector):
             # Wait a little
             # endpoints = self._update_endpoints(name)
 
-            _LOGGER.debug(f'[run] created deployment: {resp_dep}')
+            # _LOGGER.debug(f'[run] created deployment: {resp_dep}')
             plugin = self._get_plugin_info_from_service(resp_svc)
 
             _LOGGER.debug(f'[run] plugin: {plugin}')
@@ -139,9 +136,6 @@ class KubernetesConnector(ContainerConnector):
         if service_type in REPLICA_DIC:
             return REPLICA_DIC[service_type]
         return self.NUM_OF_REPLICAS
-
-    def _update_state_machine(self, status):
-        return "ACTIVE"
 
     def _get_deployment(self, labels, name, image):
         """ Create or get Deployment
@@ -356,27 +350,6 @@ class KubernetesConnector(ContainerConnector):
         _LOGGER.debug(f'[_list_service] services: {result}')
         return result
 
-    def _exist_label_in_annotation(self, labels, annotation):
-        """ Check existance of label in annotation
-            (Exact match)
-
-        Args:
-            labels(list)
-            annotation(dict)
-
-        Return:
-            True | False
-        """
-        result = False
-        for label in labels:
-            k, v = label.split("=")
-            if k in annotation and annotation[k] == v:
-                result = True
-            else:
-                # One of labels is not match
-                return False
-        return result
-
     def _get_endpoints(self, svc_name):
         """ This will be different from service type
         Headless Service: multiple endpoints
@@ -423,7 +396,6 @@ class KubernetesConnector(ContainerConnector):
             _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}')
             return []
 
-
     def _get_plugin_info_from_service(self, service):
         """
         service is V1Service object, not dictionary
@@ -466,7 +438,30 @@ class KubernetesConnector(ContainerConnector):
         _LOGGER.debug(f'[_get_plugin_info_from_service] plugin: {plugin}')
         return plugin
 
-    def _get_k8s_label(self, labels):
+    @staticmethod
+    def _exist_label_in_annotation(labels, annotation):
+        """ Check existance of label in annotation
+            (Exact match)
+
+        Args:
+            labels(list)
+            annotation(dict)
+
+        Return:
+            True | False
+        """
+        result = False
+        for label in labels:
+            k, v = label.split("=")
+            if k in annotation and annotation[k] == v:
+                result = True
+            else:
+                # One of labels is not match
+                return False
+        return result
+
+    @staticmethod
+    def _get_k8s_label(labels):
         """ make OPS labels for K8S management
             labels = {
               spaceone.supervisor.name: root
@@ -497,3 +492,7 @@ class KubernetesConnector(ContainerConnector):
             elif k == 'spaceone.supervisor.plugin.service_type':
                 mgmt_label['service_type'] = v
         return mgmt_label
+
+    @staticmethod
+    def _update_state_machine(status):
+        return "ACTIVE"
