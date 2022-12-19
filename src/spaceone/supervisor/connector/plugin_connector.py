@@ -70,7 +70,7 @@ class PluginConnector(BaseConnector):
             if hostname:
                 param.update({'hostname': hostname})
 
-            _LOGGER.debug(f"param: {param}")
+            # _LOGGER.debug(f"param: {param}")
             plugins_info = self.client.Supervisor.list_plugins(param,
                                                                metadata=self.transaction.get_connection_meta())
             return plugins_info
