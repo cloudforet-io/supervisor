@@ -17,8 +17,6 @@ __all__ = ["KubernetesConnector"]
 
 import logging
 import time
-import yaml
-
 from kubernetes import client
 from kubernetes import config as k8s_config
 
