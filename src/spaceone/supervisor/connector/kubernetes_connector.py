@@ -34,7 +34,7 @@ ENDPOINT_INTERVAL = 10
 class KubernetesConnector(ContainerConnector):
     def __init__(self, transaction, config=None, **kwargs):
         super().__init__(transaction, config, **kwargs)
-        _LOGGER.debug("config: %s" % self.config)
+        _LOGGER.debug("[KubernetesConnector] config: %s" % self.config)
         self.headless = self.config.get('headless', False)
         self.node_selector = self.config.get('nodeSelector', {})
         self.NUM_OF_REPLICAS = 1
@@ -55,7 +55,7 @@ class KubernetesConnector(ContainerConnector):
     def search(self, filters):
         count = 0
         plugins_info = []
-        _LOGGER.debug("[KubernetesConnector] filters=%s" % filters)
+        # _LOGGER.debug("[KubernetesConnector] filters=%s" % filters)
         if 'label' in filters:
             services = self._list_services(filters['label'])
         else:
@@ -99,7 +99,7 @@ class KubernetesConnector(ContainerConnector):
             # _LOGGER.debug(f'[run] created deployment: {resp_dep}')
             plugin = self._get_plugin_info_from_service(resp_svc)
 
-            _LOGGER.debug(f'[run] plugin: {plugin}')
+            # _LOGGER.debug(f'[run] plugin: {plugin}')
             return plugin
 
         except Exception as e:
@@ -114,12 +114,12 @@ class KubernetesConnector(ContainerConnector):
             # delete_namespaced_service
             k8s_core_v1 = client.CoreV1Api()
             resp_svc = k8s_core_v1.delete_namespaced_service(name, self.namespace)
-            _LOGGER.debug(f'[stop] deleted service: {resp_svc}')
+            _LOGGER.debug(f'[stop] deleted service')
 
             # delete_namespaced_deployment
             k8s_apps_v1 = client.AppsV1Api()
             resp_dep = k8s_apps_v1.delete_namespaced_deployment(name, self.namespace)
-            _LOGGER.debug(f'[stop] deleted deployment: {resp_dep}')
+            _LOGGER.debug(f'[stop] deleted deployment')
 
             return True
         except Exception as e:
@@ -184,12 +184,13 @@ class KubernetesConnector(ContainerConnector):
             deployment(dict)
         """
         mgmt_labels = self._get_k8s_label(labels)
-        _LOGGER.debug(f'mgmt_labels: {mgmt_labels}')
+        # _LOGGER.debug(f'mgmt_labels: {mgmt_labels}')
         if 'plugin_id' in mgmt_labels:
             plugin_id = mgmt_labels['plugin_id']
             NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'], plugin_id)
         else:
             NUM_OF_REPLICAS = self._get_replica(mgmt_labels['service_type'])
+
         deployment = {
             'apiVersion': 'apps/v1',
             'kind': 'Deployment',
@@ -246,7 +247,7 @@ class KubernetesConnector(ContainerConnector):
         try:
             # get service
             resp_svc = k8s_core_v1.read_namespaced_service(name=name, namespace=self.namespace)
-            _LOGGER.debug(f'[run] found service: {resp_svc}')
+            # _LOGGER.debug(f'[run] found service: {resp_svc}')
             return resp_svc
         except Exception as e:
             _LOGGER.debug(f'[_get_service] may be not found, {e}')
@@ -254,10 +255,10 @@ class KubernetesConnector(ContainerConnector):
         try:
             # Create Service
             service = self._create_service(label, name, port)
-            _LOGGER.debug(f'[run] service yml: {service}')
+            # _LOGGER.debug(f'[run] service yml: {service}')
             resp_svc = k8s_core_v1.create_namespaced_service(
                     body=service, namespace=self.namespace)
-            _LOGGER.debug(f'[run] created service: {resp_svc}')
+            # _LOGGER.debug(f'[run] created service: {resp_svc}')
             return resp_svc
 
         except Exception as e:
@@ -271,7 +272,7 @@ class KubernetesConnector(ContainerConnector):
         Returns:
             Service(dict)
         """
-        _LOGGER.debug(f'[_create_service] headless service: {self.headless}')
+        # _LOGGER.debug(f'[_create_service] headless service: {self.headless}')
         mgmt_labels = self._get_k8s_label(labels)
         """  Example
             supervisor_name: root
@@ -338,7 +339,7 @@ class KubernetesConnector(ContainerConnector):
             labels = [label]
 
         # k,v = label.split("=")
-        _LOGGER.debug(f'[_list_service] labels: {labels}')
+        # _LOGGER.debug(f'[_list_service] labels: {labels}')
         for item in resp.items:
             if hasattr(item.metadata, 'annotations') and isinstance(item.metadata.annotations, dict):
                 annotations = item.metadata.annotations
@@ -347,7 +348,7 @@ class KubernetesConnector(ContainerConnector):
             if self._exist_label_in_annotation(labels, annotations):
                 result.append(item)
 
-        _LOGGER.debug(f'[_list_service] services: {result}')
+        # _LOGGER.debug(f'[_list_service] services: {result}')
         return result
 
     def _get_endpoints(self, svc_name):
