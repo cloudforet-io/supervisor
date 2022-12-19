@@ -391,7 +391,7 @@ class KubernetesConnector(ContainerConnector):
                     name=svc_name,
                     namespace=self.namespace)
             endpoints = _parse_subsets(resp.subsets)
-            _LOGGER.debug(f'[_get_endpoints] {endpoints}')
+            # _LOGGER.debug(f'[_get_endpoints] {endpoints}')
             return endpoints
         except Exception as e:
             _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}')
@@ -403,7 +403,7 @@ class KubernetesConnector(ContainerConnector):
         """
         # Custom Labels
         labels = service.metadata.annotations
-        _LOGGER.debug("[_get_plugin_info_from_service] labels=%s" % labels)
+        # _LOGGER.debug("[_get_plugin_info_from_service] labels=%s" % labels)
 
         if 'spaceone.supervisor.plugin_id' in labels:
             plugin_id = labels['spaceone.supervisor.plugin_id']
@@ -436,7 +436,7 @@ class KubernetesConnector(ContainerConnector):
             endpoints = self._get_endpoints(service.metadata.name)
             plugin['endpoints'] = endpoints
 
-        _LOGGER.debug(f'[_get_plugin_info_from_service] plugin: {plugin}')
+        # _LOGGER.debug(f'[_get_plugin_info_from_service] plugin: {plugin}')
         return plugin
 
     @staticmethod

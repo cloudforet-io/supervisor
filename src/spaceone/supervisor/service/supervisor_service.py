@@ -154,9 +154,9 @@ class SupervisorService(BaseService):
             dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
             dict_plugin.update(params)
             state = dict_plugin.get('state', None)
-            _LOGGER.debug(f'[_check_plugin_state] plugin_info: {dict_plugin}')
+            # _LOGGER.debug(f'[_check_plugin_state] plugin_info: {dict_plugin}')
             if state == 'RE_PROVISIONING' or state == 'ERROR':
-                _LOGGER.debug(f'[_check_plugin_state] params: {params}')
+                # _LOGGER.debug(f'[_check_plugin_state] params: {params}')
                 self.install_plugin(dict_plugin)
                 delete_params = {
                     'plugin_id': dict_plugin['plugin_id'],
@@ -179,11 +179,11 @@ class SupervisorService(BaseService):
         for plugin in plugins:
             dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
             dict_plugin.update(params)
-            _LOGGER.debug(f'[_install_plugins] plugin_info: {dict_plugin}')
+            # _LOGGER.debug(f'[_install_plugins] plugin_info: {dict_plugin}')
             if not self._exist_plugin(dict_plugin):
-                _LOGGER.debug(f'[_install_plugins] params: {params}')
+                # _LOGGER.debug(f'[_install_plugins] params: {params}')
                 self.install_plugin(dict_plugin)
-                _LOGGER.debug(f'[_install_plugins] installed: {params}')
+                # _LOGGER.debug(f'[_install_plugins] installed: {params}')
 
     def _delete_plugins(self, plugins, params):
         """ Delete plugins excluding plugins
@@ -192,7 +192,7 @@ class SupervisorService(BaseService):
         current_plugins = self._supervisor_mgr.list_plugins_by_label(labels)
         for current_plugin in current_plugins['results']:
             if _is_members(current_plugin, plugins) is False:
-                _LOGGER.debug(f'[_delete_plugins] delete plugin: {current_plugin}')
+                # _LOGGER.debug(f'[_delete_plugins] delete plugin: {current_plugin}')
                 # Delete current_plugin
                 delete_params = {
                     'plugin_id': current_plugin['plugin_id'],
@@ -212,7 +212,7 @@ class SupervisorService(BaseService):
             f'spaceone.supervisor.plugin.version={plugin["version"]}'
         ]
         plugins = self._supervisor_mgr.list_plugins_by_label(labels)
-        _LOGGER.debug(f'[_exist_plugin]\n {labels}\n{plugins}')
+        # _LOGGER.debug(f'[_exist_plugin]\n {labels}\n{plugins}')
         if plugins['total_count'] > 0:
             return True
         return False
@@ -235,7 +235,7 @@ class SupervisorService(BaseService):
         version = params['version']
         domain_id = params['domain_id']
         plugin_info = self._supervisor_mgr.get_plugin_from_repository(plugin_id, domain_id)
-        _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
+        # _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
         # - image_uri
         # based on image, version, contact to repository API
         image_uri = "%s/%s:%s" % (
@@ -269,7 +269,7 @@ class SupervisorService(BaseService):
         labels.update({'spaceone.supervisor.plugin.endpoint': endpoint})
 
         result_data = self._supervisor_mgr.install_plugin(image_uri, labels, ports, name)
-        _LOGGER.debug(f'[install_plugin] installed plugin info: {result_data}')
+        # _LOGGER.debug(f'[install_plugin] installed plugin info: {result_data}')
         # update endpoint
         return result_data
 
@@ -289,17 +289,16 @@ class SupervisorService(BaseService):
                                     params['plugin_id'],
                                     params['version'],
                                     params['domain_id'])
-        _LOGGER.debug(f'[delete_plugin] result: {result_data}')
+        # _LOGGER.debug(f'[delete_plugin] result: {result_data}')
         return result_data
 
     def discover_plugins(self, name):
         """ Discover plugins
         """
         label = f'spaceone.supervisor.name={name}'
-        _LOGGER.debug(f'[discover_plugins] label: {label}')
+        # _LOGGER.debug(f'[discover_plugins] label: {label}')
         plugins = self._supervisor_mgr.list_plugins_by_label(label)
         return plugins
-
 
     def _get_lock(self, domain_id, name):
         try:
