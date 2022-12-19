@@ -52,12 +52,10 @@ class PluginConnector(BaseConnector):
 
         Returns: SupervisorInfo
         """
-        _LOGGER.debug(param)
+        # _LOGGER.debug(param)
         if self.protocol == 'grpc':
             # Try to connect via grpc client
-            _LOGGER.debug("param: %s" % param)
-            r = self.client.Supervisor.publish(param,
-                                               metadata=self.transaction.get_connection_meta())
+            r = self.client.Supervisor.publish(param, metadata=self.transaction.get_connection_meta())
             return r
         elif self.protocol == 'http':
             raise ERROR_WRONG_CONFIGURATION(key=self.protocol)

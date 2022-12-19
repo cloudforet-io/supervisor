@@ -33,7 +33,7 @@ class PluginServiceManager(BaseManager):
 
         connector is gRPC client for Plugin Service
         """
-        _LOGGER.debug("Manager:publish_supervisor:%s" % params)
+        _LOGGER.debug("Manager:publish_supervisor")
         connector = self.locator.get_connector('PluginConnector')
         r = connector.publish(params)
         return r
