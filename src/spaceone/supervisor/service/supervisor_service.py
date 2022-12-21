@@ -112,14 +112,14 @@ class SupervisorService(BaseService):
             self._release_lock(domain_id, name)
             return False
 
-        print("XXXXXXXXXXXXXXXXXXXXXX Check Plugin State XXXXXXXXXXXXXXXXX")
+        _LOGGER.debug(f'[sync_plugins] Check Plugin State')
         # if plugin state == RE_PROVISION, delete first
         try:
             self._check_plugin_state(plugins.results, params)
         except Exception as e:
             _LOGGER.error(f'[sync_plugins] fail to check plugins, {e}')
 
-        print("XXXXXXXXXXXXXXXXXXXXXX Install XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        _LOGGER.debug(f'[sync_plugins] Install Plugins')
         try:
             self._install_plugins(plugins.results, params)
         except Exception as e:
@@ -127,7 +127,7 @@ class SupervisorService(BaseService):
             self._release_lock(domain_id, name)
             raise ERROR_INSTALL_PLUGINS(plugins)
 
-        print("XXXXXXXXXXXXXXXXXXXXX Clean-up XXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        _LOGGER.debug(f'[sync_plugins] Clean up Plugins')
         try:
             self._delete_plugins(plugins.results, params)
         except Exception as e:
@@ -136,7 +136,7 @@ class SupervisorService(BaseService):
             raise ERROR_DELETE_PLUGINS(plugins=plugins)
 
         # Publish Again
-        print("XXXXXXXXXXXXXXXXXXXXXXX Publish XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        _LOGGER.debug(f'[sync_plugins] Publish Supervisor')
         try:
             self.publish_supervisor(params)
         except Exception as e:
