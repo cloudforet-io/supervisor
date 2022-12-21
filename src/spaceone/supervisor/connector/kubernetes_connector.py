@@ -223,6 +223,12 @@ class KubernetesConnector(ContainerConnector):
         if self.service_account:
             deployment['spec']['serviceAccountName'] = self.service_account
 
+        if _image_pull_secrets := self.config.get('imagePullSecrets'):
+            deployment['spec']['template']['spec']['imagePullSecrets'] = _image_pull_secrets
+
+        if _container_env := self.config.get('env'):
+            deployment['spec']['template']['spec']['containers'][0]['env'] = _container_env
+
         return deployment
 
     def _update_endpoints(self, svc_name):
