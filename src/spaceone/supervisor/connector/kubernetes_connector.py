@@ -129,13 +129,19 @@ class KubernetesConnector(ContainerConnector):
             raise ERROR_CONFIGURATION(key='docker configuration')
 
     def _get_replica(self, service_type, plugin_id=None):
-        REPLICA_DIC = self.config.get('replica', {})
-        if plugin_id:
-            service_type = f'{service_type}?{plugin_id}'
         _LOGGER.debug(f'[_get_replica] service_type: {service_type}, plugin_id: {plugin_id}')
-        if service_type in REPLICA_DIC:
+
+        REPLICA_DIC = self.config.get('replica', {})
+        service_type_with_plugin_id = service_type
+        if plugin_id:
+            service_type_with_plugin_id = f'{service_type}?{plugin_id}'
+
+        if service_type_with_plugin_id in REPLICA_DIC:
+            return REPLICA_DIC[service_type_with_plugin_id]
+        elif service_type in REPLICA_DIC:
             return REPLICA_DIC[service_type]
-        return self.NUM_OF_REPLICAS
+        else:
+            return self.NUM_OF_REPLICAS
 
     def _get_deployment(self, labels, name, image):
         """ Create or get Deployment
