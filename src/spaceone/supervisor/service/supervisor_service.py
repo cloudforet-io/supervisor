@@ -150,6 +150,9 @@ class SupervisorService(BaseService):
         """ Check plugin state first
         if state == RE_PROVISIONING, delete plugin first
         """
+        if 'domain_id' in params:
+            del params['domain_id']
+
         for plugin in plugins:
             dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
             dict_plugin.update(params)
@@ -178,6 +181,9 @@ class SupervisorService(BaseService):
         """
         for plugin in plugins:
             dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
+            if 'domain_id' in params:
+                del params['domain_id']
+
             dict_plugin.update(params)
             # _LOGGER.debug(f'[_install_plugins] plugin_info: {dict_plugin}')
             if not self._exist_plugin(dict_plugin):
