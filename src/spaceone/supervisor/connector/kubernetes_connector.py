@@ -31,7 +31,9 @@ MAX_COUNT = 300
 WAIT_CREATION = 30
 ENDPOINT_INTERVAL = 10
 
+
 class KubernetesConnector(ContainerConnector):
+
     def __init__(self, transaction, config=None, **kwargs):
         super().__init__(transaction, config, **kwargs)
         _LOGGER.debug("[KubernetesConnector] config: %s" % self.config)
@@ -39,7 +41,6 @@ class KubernetesConnector(ContainerConnector):
         self.node_selector = self.config.get('nodeSelector', {})
         self.NUM_OF_REPLICAS = 1
         self.namespace = self.config['namespace']
-        self.service_account = self.config.get('service_account')
 
         try:
             k8s_config.load_incluster_config()
@@ -226,8 +227,8 @@ class KubernetesConnector(ContainerConnector):
                 }
             }
 
-        if self.service_account:
-            deployment['spec']['serviceAccountName'] = self.service_account
+        if _service_account_name := self.config.get('service_account'):
+            deployment['spec']['serviceAccountName'] = _service_account_name
 
         if _image_pull_secrets := self.config.get('imagePullSecrets'):
             deployment['spec']['template']['spec']['imagePullSecrets'] = _image_pull_secrets
@@ -238,6 +239,7 @@ class KubernetesConnector(ContainerConnector):
         if _container_resources := self.config.get('resources'):
             deployment['spec']['template']['spec']['containers'][0]['resources'] = _container_resources
 
+        _LOGGER.debug(f'[_create_deployment] deployment: {deployment}')
         return deployment
 
     def _update_endpoints(self, svc_name):
