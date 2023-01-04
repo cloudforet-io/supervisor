@@ -216,11 +216,23 @@ class KubernetesConnector(ContainerConnector):
                         'labels': mgmt_labels
                         },
                     'spec': {
-                        'containers': [{
-                            'image': image,
-                            'name': name,
-                            'imagePullPolicy': 'IfNotPresent'
-                            }],
+                        'containers': [
+                            {
+                                'image': image,
+                                'name': name,
+                                'imagePullPolicy': 'IfNotPresent',
+                                'ports': [
+                                    {
+                                        'containerPort': 50051
+                                    }
+                                ],
+                                'livenessProbe': {
+                                    'tcpSocket': {
+                                        'port': 50051
+                                    }
+                                }
+                            }
+                        ],
                         'nodeSelector': self.node_selector
                         }
                     }
