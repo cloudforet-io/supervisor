@@ -4,45 +4,61 @@ CACHES = {
 
 CONNECTORS = {
     'PluginConnector': {
-#        'endpoint': {
-#            'v1': 'grpc://plugin:50051'
-#        }
+        # 'endpoint': {
+        #    'v1': 'grpc://plugin:50051'
+        # }
     },
     'RepositoryConnector': {
-#        'endpoint': {
-#            'v1': 'grpc://repository:50051'
-#        }
+        # 'endpoint': {
+        #    'v1': 'grpc://repository:50051'
+        # }
     },
     'DockerConnector': {
-#        "start_port": 50060,
-#        "end_port": 50090
+        # "start_port": 50060,
+        # "end_port": 50090
     },
     'KubernetesConnector': {
-#        "start_port": 50060,
-#        "end_port": 50090,
-#        "namespace": "supervisor",
-#        "headless": True,
-#        "replica": {
-#            "inventory.collector": 4
-#        }
-#
-#        "nodeSelector": {
-#             "Category": "supervisor"
-#        }
+        # "start_port": 50060,
+        # "end_port": 50090,
+        # "namespace": "supervisor",
+        # "imagePullSecrets": [
+        #     {"name": "credentials"}
+        # ],
+        # "env": [
+        #     {"name": "HTTP_PROXY", "value": "http://***"},
+        #     {...}
+        # ],
+        # "resources": {
+        #     "requests": {
+        #         "memory": "64Mi",
+        #         "cpu": "250m"
+        #     },
+        #     "limits": {
+        #         "memory": "128Mi",
+        #         "cpu": "500m"
+        #     }
+        # },
+        # "headless": True,
+        # "replica": {
+        #    "inventory.collector": 4
+        # },
+        # "nodeSelector": {
+        #     "Category": "supervisor"
+        # }
     }
 }
 
 HANDLERS = {
 # TODO: add system key authentication handler
-# 'authentication': [{
-#     'backend': 'spaceone.core.handler.authentication_handler.AuthenticationGRPCHandler',
-#     'uri': 'grpc://identity:50051/v1/Domain/get_public_key'
-# }],
-#    'authorization': [{
-#        'backend': 'spaceone.core.handler.authorization_handler.AuthorizationGRPCHandler',
-#        'uri': 'grpc://identity:50051/v1/Authorization/verify'
-#    }],
-#    'event': []
+    'authentication': [{
+        'backend': 'spaceone.core.handler.authentication_handler.AuthenticationGRPCHandler',
+        'uri': 'grpc://identity:50051/v1/Domain/get_public_key'
+    }],
+    'authorization': [{
+       'backend': 'spaceone.core.handler.authorization_handler.AuthorizationGRPCHandler',
+       'uri': 'grpc://identity:50051/v1/Authorization/verify'
+    }],
+    'event': []
 }
 
 

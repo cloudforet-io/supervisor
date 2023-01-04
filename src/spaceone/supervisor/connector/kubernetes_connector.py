@@ -235,6 +235,9 @@ class KubernetesConnector(ContainerConnector):
         if _container_env := self.config.get('env'):
             deployment['spec']['template']['spec']['containers'][0]['env'] = _container_env
 
+        if _container_resources := self.config.get('resources'):
+            deployment['spec']['template']['spec']['containers'][0]['resources'] = _container_resources
+
         return deployment
 
     def _update_endpoints(self, svc_name):
