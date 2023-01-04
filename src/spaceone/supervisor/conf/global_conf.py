@@ -49,49 +49,49 @@ CONNECTORS = {
 }
 
 HANDLERS = {
-# TODO: add system key authentication handler
-    'authentication': [{
-        'backend': 'spaceone.core.handler.authentication_handler.AuthenticationGRPCHandler',
-        'uri': 'grpc://identity:50051/v1/Domain/get_public_key'
-    }],
-    'authorization': [{
-       'backend': 'spaceone.core.handler.authorization_handler.AuthorizationGRPCHandler',
-       'uri': 'grpc://identity:50051/v1/Authorization/verify'
-    }],
-    'event': []
+    # # TODO: add system key authentication handler
+    # 'authentication': [{
+    #     'backend': 'spaceone.core.handler.authentication_handler.AuthenticationGRPCHandler',
+    #     'uri': 'grpc://identity:50051/v1/Domain/get_public_key'
+    # }],
+    # 'authorization': [{
+    #    'backend': 'spaceone.core.handler.authorization_handler.AuthorizationGRPCHandler',
+    #    'uri': 'grpc://identity:50051/v1/Authorization/verify'
+    # }],
+    # 'event': []
 }
 
 
 # Define Queue options
 QUEUES = {
-#    'default_q': {
-#        'backend': 'spaceone.core.queue.redis_queue.RedisQueue',
-#        'host': 'redis',
-#        'port': 6379,
-#        'channel': 'supervisor_queue'
-#    }
+    # 'default_q': {
+    #     'backend': 'spaceone.core.queue.redis_queue.RedisQueue',
+    #     'host': 'redis',
+    #     'port': 6379,
+    #     'channel': 'supervisor_queue'
+    # }
 }
 
 # Define scheduler options
 SCHEDULERS = {
-#    'publish': {
-#        'backend': 'spaceone.supervisor.scheduler.publish_scheduler.PublishScheduler',
-#        'queue': 'default_q',
-#        'interval': 30
-#    },
-#    'sync': {
-#        'backend': 'spaceone.supervisor.scheduler.sync_scheduler.SyncScheduler',
-#        'queue': 'default_q',
-#        'interval': 120
-#    }
+    # 'publish': {
+    #     'backend': 'spaceone.supervisor.scheduler.publish_scheduler.PublishScheduler',
+    #     'queue': 'default_q',
+    #     'interval': 30
+    # },
+    # 'sync': {
+    #     'backend': 'spaceone.supervisor.scheduler.sync_scheduler.SyncScheduler',
+    #     'queue': 'default_q',
+    #     'interval': 120
+    # }
 }
 
 # Define worker options
 WORKERS = {
-#    'worker': {
-#        'backend': 'spaceone.core.scheduler.worker.BaseWorker',
-#        'queue': 'default_q'
-#        }
+    'worker': {
+        'backend': 'spaceone.core.scheduler.worker.BaseWorker',
+        'queue': 'default_q'
+    }
 }
 
 # This value should be global unique
@@ -99,11 +99,11 @@ WORKERS = {
 NAME = ""
 HOSTNAME = ""
 BACKEND = "DockerConnector"
-#PLUGIN = {
-#    "backend": "DockerConnector",
-#    "start_port": 50060,
-#    "end_port": 50090
-#}
+# PLUGIN = {
+#     "backend": "DockerConnector",
+#     "start_port": 50060,
+#     "end_port": 50090
+# }
 
 TAGS = {}
 LABELS = {}
