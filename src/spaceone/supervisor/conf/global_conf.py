@@ -21,6 +21,7 @@ CONNECTORS = {
         # "start_port": 50060,
         # "end_port": 50090,
         # "namespace": "supervisor",
+        # "service_account": "service_account_name",
         # "imagePullSecrets": [
         #     {"name": "credentials"}
         # ],
