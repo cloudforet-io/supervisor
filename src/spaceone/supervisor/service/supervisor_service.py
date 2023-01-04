@@ -180,12 +180,14 @@ class SupervisorService(BaseService):
         """
         for plugin in plugins:
             dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
+            _LOGGER.debug(f'[_install_plugins] dict_plugin: {dict_plugin}')
             plugin_domain_id = dict_plugin['domain_id']
             dict_plugin.update(params)
             dict_plugin['domain_id'] = plugin_domain_id
             # _LOGGER.debug(f'[_install_plugins] plugin_info: {dict_plugin}')
             if not self._exist_plugin(dict_plugin):
                 # _LOGGER.debug(f'[_install_plugins] params: {params}')
+                _LOGGER.debug(f'[_install_plugins] install_plugin: {dict_plugin}')
                 self.install_plugin(dict_plugin)
                 # _LOGGER.debug(f'[_install_plugins] installed: {params}')
 
