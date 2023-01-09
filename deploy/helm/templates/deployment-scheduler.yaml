@@ -27,20 +27,46 @@ spec:
       serviceAccountName: {{ .Values.global.serviceAccountName }}
 {{- end }}
       terminationGracePeriodSeconds: {{ .Values.gracePeriod }}
+{{- if .Values.imagePullSecrets}}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end}}
       containers:
         - name: kubectl-proxy
-          image: spaceone/kubectl-proxy:latest
+          image: {{ .Values.sidecar.kubectl_proxy.image.name }}:{{ .Values.sidecar.kubectl_proxy.image.version }}
+{{- if .Values.sidecar.kubectl_proxy.resources }}
+          resources:
+          {{- toYaml .Values.sidecar.kubectl_proxy.resources | nindent 12 }}
+{{- end }}
           ports:
             - containerPort: 8080
+{{- if .Values.global.common_env }}
+          env:
+{{- toYaml .Values.global.common_env | nindent 12 }}
+{{- end }}
 
         - name: redis
-          image: redis
+          image: {{ .Values.sidecar.redis.image.name }}:{{ .Values.sidecar.redis.image.version }}
+{{- if .Values.sidecar.redis.resources }}
+          resources:
+          {{- toYaml .Values.sidecar.redis.resources | nindent 12 }}
+{{- end }}
           ports:
             - containerPort: 6379
+{{- if .Values.global.common_env }}
+          env:
+{{- toYaml .Values.global.common_env | nindent 12 }}
+{{- end }}
 
         - name: {{ .Values.name }}-scheduler
           image: {{ .Values.image.name }}:{{ .Values.image.version }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
+{{- if .Values.resources.scheduler }}
+          resources:
+          {{- toYaml .Values.resources.scheduler | nindent 12 }}
+{{- end }}
           command: ['spaceone', 'scheduler', 'spaceone.{{ .Values.name }}']
           volumeMounts:
             - name: default-conf
@@ -58,11 +84,14 @@ spec:
           env:
             - name: SPACEONE_CONFIG_FILE
               value: /opt/spaceone/{{ .Values.name }}/config/config.yaml
-
-
-{{- if .Values.sidecar }}
-{{- toYaml .Values.sidecar | nindent 8 }}
+{{- if .Values.global.common_env }}
+{{- toYaml .Values.global.common_env | nindent 12 }}
 {{- end }}
+
+{{- if .Values.sidecar.scheduler }}
+{{- toYaml .Values.sidecar.scheduler | nindent 8 }}
+{{- end }}
+
 
 {{- if .Values.global.supervisor.sidecar }}
 {{- toYaml .Values.global.supervisor.sidecar | nindent 8 }}

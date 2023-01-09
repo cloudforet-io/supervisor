@@ -13,6 +13,15 @@ image:
     version: latest
 imagePullPolicy: IfNotPresent
 
+resources: {}
+#     scheduler: 
+#         requests:
+#             memory: "128Mi"
+#             cpu: "25m"
+#         limits:
+#             memory: "256Mi"
+#             cpu: "50m"
+
 # Overwrite database
 database: {}
 
@@ -46,9 +55,35 @@ application_scheduler:
 #        uri: debug/supervisor/TOKEN
 # Overwrite worker config
 application_worker: {}
+
+##########################
 # local sidecar
 ##########################
-#sidecar:
+sidecar:
+    kubectl_proxy:
+        image:
+            name: spaceone/kubectl-proxy
+            version: latest
+            imagePullPolicy: IfNotPresent
+        resources: {}
+        #     requests:
+        #         memory: "128Mi"
+        #         cpu: "25m"
+        #     limits:
+        #         memory: "256Mi"
+        #         cpu: "50m"
+    redis:
+        image:
+            name: redis
+            version: latest
+            imagePullPolicy: IfNotPresent
+        resources: {}
+        #     requests:
+        #         memory: "128Mi"
+        #         cpu: "25m"
+        #     limits:
+        #         memory: "256Mi"
+        #         cpu: "50m"
 
 
 ##########################
