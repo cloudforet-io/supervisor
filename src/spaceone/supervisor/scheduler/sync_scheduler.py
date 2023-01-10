@@ -85,7 +85,7 @@ class SyncScheduler(IntervalScheduler):
             self.domain_id = _get_domain_id_from_token(self.token)
             return True
         except Exception as e:
-            _LOGGER.error(f'[check_global_configuration] error: {e}')
+            _LOGGER.error(f'[check_global_configuration] error: {e}', exc_info=True)
             return False
 
     def create_task(self):
