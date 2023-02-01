@@ -1,0 +1,19 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: supervisor
+build:
+  platforms: ["linux/amd64"]
+  tagPolicy:
+    sha256: {}
+  artifacts:
+    - image: ${IMAGE_REPOSITORY}/supervisor
+      docker:
+        dockerfile: Dockerfile
+deploy:
+  helm:
+    releases:
+    - name: supervisor
+      chartPath: deploy/helm
+      valuesFiles:
+      - ${VALUES_LOCATION}/supervisor.yaml
