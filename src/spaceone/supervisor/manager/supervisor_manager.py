@@ -47,8 +47,7 @@ class SupervisorManager(BaseManager):
         """
         labels = [
             f'spaceone.supervisor.plugin_id={plugin_id}',
-            f'spaceone.supervisor.plugin.version={version}',
-            f'spaceone.supervisor.domain_id={domain_id}'
+            f'spaceone.supervisor.plugin.version={version}'
         ]
 
         target_plugins = self.list_plugins_by_label(labels)

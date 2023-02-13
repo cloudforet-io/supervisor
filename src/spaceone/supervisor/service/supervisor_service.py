@@ -202,8 +202,7 @@ class SupervisorService(BaseService):
                 # Delete current_plugin
                 delete_params = {
                     'plugin_id': current_plugin['plugin_id'],
-                    'version': current_plugin['version'],
-                    'domain_id': params['domain_id']
+                    'version': current_plugin['version']
                 }
                 self.delete_plugin(delete_params)
             else:
@@ -286,15 +285,13 @@ class SupervisorService(BaseService):
         Args:
             params(dict) = {
                 'plugin_id': 'str',
-                'version': 'str',
-                'domain_id': 'str'
+                'version': 'str'
             }
 
         """
         result_data = self._supervisor_mgr.delete_plugin(
                                     params['plugin_id'],
-                                    params['version'],
-                                    params['domain_id'])
+                                    params['version'])
         # _LOGGER.debug(f'[delete_plugin] result: {result_data}')
         return result_data
 
