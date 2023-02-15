@@ -42,7 +42,7 @@ class SupervisorManager(BaseManager):
         r = connector.run(image_uri, labels, ports, name)
         return r
 
-    def delete_plugin(self, plugin_id, version, domain_id):
+    def delete_plugin(self, plugin_id, version):
         """ Delete plugin
         """
         labels = [
