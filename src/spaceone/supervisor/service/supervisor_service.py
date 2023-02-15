@@ -278,7 +278,7 @@ class SupervisorService(BaseService):
         # update endpoint
         return result_data
 
-    @check_required(['plugin_id', 'version', 'domain_id'])
+    @check_required(['plugin_id', 'version'])
     def delete_plugin(self, params):
         """ Delete Plugin
 
