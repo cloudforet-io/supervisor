@@ -34,19 +34,6 @@ spec:
       {{- end }}
 {{- end}}
       containers:
-        - name: kubectl-proxy
-          image: {{ .Values.sidecar.kubectl_proxy.image.name }}:{{ .Values.sidecar.kubectl_proxy.image.version }}
-{{- if .Values.sidecar.kubectl_proxy.resources }}
-          resources:
-          {{- toYaml .Values.sidecar.kubectl_proxy.resources | nindent 12 }}
-{{- end }}
-          ports:
-            - containerPort: 8080
-{{- if .Values.global.common_env }}
-          env:
-{{- toYaml .Values.global.common_env | nindent 12 }}
-{{- end }}
-
         - name: redis
           image: {{ .Values.sidecar.redis.image.name }}:{{ .Values.sidecar.redis.image.version }}
 {{- if .Values.sidecar.redis.resources }}
@@ -77,6 +64,10 @@ spec:
               mountPath: /etc/localtime
             - name: log-volume
               mountPath: /var/log/spaceone
+            - name: shared-conf
+              mountPath: /opt/spaceone/{{ .Values.name }}/config/shared.yaml
+              subPath: shared.yaml
+              readOnly: true
             - name: application-conf
               mountPath: /opt/spaceone/{{ .Values.name }}/config/application.yaml
               subPath: application.yaml
@@ -101,6 +92,9 @@ spec:
         - name: default-conf 
           configMap:
             name: {{ .Values.name }}-conf
+        - name: shared-conf
+          configMap:
+            name: shared-conf
         - name: application-conf
           configMap:
             name: {{ .Values.name }}-application-scheduler-conf

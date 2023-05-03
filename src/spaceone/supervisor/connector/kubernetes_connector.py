@@ -45,7 +45,6 @@ class KubernetesConnector(ContainerConnector):
         try:
             k8s_config.load_incluster_config()
             conf = client.Configuration()
-            conf.proxy = "http://localhost:8080"
         except Exception as e:
             _LOGGER.debug(f'[KubernetesConnector] {e}')
             raise ERROR_CONFIGURATION(key='kubernetes configuration')
@@ -162,14 +161,15 @@ class KubernetesConnector(ContainerConnector):
         try:
             deployment = self._create_deployment(image, name, labels)
             resp_dep = k8s_apps_v1.create_namespaced_deployment(
-                    body=deployment, namespace=self.namespace)
+                body=deployment, namespace=self.namespace)
 
             # create is asynchronous, wait a little
             time.sleep(WAIT_CREATION)
 
             # wait for max 5 minutes
             wait_count = 0
-            while k8s_apps_v1.read_namespaced_deployment(name=name, namespace=self.namespace).status.available_replicas < 1:
+            while k8s_apps_v1.read_namespaced_deployment(name=name,
+                                                         namespace=self.namespace).status.available_replicas < 1:
                 time.sleep(10)
                 wait_count += 10
                 if wait_count > 300:
@@ -204,17 +204,17 @@ class KubernetesConnector(ContainerConnector):
             'metadata': {
                 'name': name,
                 'labels': mgmt_labels
-                },
+            },
             'spec': {
                 'replicas': NUM_OF_REPLICAS,
                 'selector': {
                     'matchLabels': mgmt_labels
-                    },
+                },
                 'template': {
                     'metadata': {
                         'name': name,
                         'labels': mgmt_labels
-                        },
+                    },
                     'spec': {
                         'containers': [
                             {
@@ -234,10 +234,10 @@ class KubernetesConnector(ContainerConnector):
                             }
                         ],
                         'nodeSelector': self.node_selector
-                        }
                     }
                 }
             }
+        }
 
         if _service_account_name := self.config.get('service_account'):
             deployment['spec']['template']['spec']['serviceAccountName'] = _service_account_name
@@ -245,17 +245,24 @@ class KubernetesConnector(ContainerConnector):
         if _image_pull_secrets := self.config.get('imagePullSecrets'):
             deployment['spec']['template']['spec']['imagePullSecrets'] = _image_pull_secrets
 
+        if _volumes := self.config.get('volumes'):
+            deployment['spec']['template']['spec']['volumes'] = _volumes
+
         if _container_env := self.config.get('env'):
             deployment['spec']['template']['spec']['containers'][0]['env'] = _container_env
 
         if _container_resources := self.config.get('resources'):
             deployment['spec']['template']['spec']['containers'][0]['resources'] = _container_resources
 
+        if _container_volume_mounts := self.config.get('volume_mounts'):
+            deployment['spec']['template']['spec']['containers'][0]['volumeMounts'] = _container_volume_mounts
+
         _LOGGER.debug(f'[_create_deployment] deployment: {deployment}')
+
         return deployment
 
     def _update_endpoints(self, svc_name):
-        if self.headless == False:
+        if self.headless is False:
             # Do nothing
             return
         endpoints = []
@@ -286,7 +293,7 @@ class KubernetesConnector(ContainerConnector):
             service = self._create_service(label, name, port)
             # _LOGGER.debug(f'[run] service yml: {service}')
             resp_svc = k8s_core_v1.create_namespaced_service(
-                    body=service, namespace=self.namespace)
+                body=service, namespace=self.namespace)
             # _LOGGER.debug(f'[run] created service: {resp_svc}')
             return resp_svc
 
@@ -313,7 +320,7 @@ class KubernetesConnector(ContainerConnector):
             spec = {
                 'ports': [{
                     'port': ports['HostPort'], 'targetPort': ports['TargetPort']
-                    }],
+                }],
                 'selector': mgmt_labels,
                 'clusterIP': 'None'
             }
@@ -321,7 +328,7 @@ class KubernetesConnector(ContainerConnector):
             spec = {
                 'ports': [{
                     'port': ports['HostPort'], 'targetPort': ports['TargetPort']
-                    }],
+                }],
                 'selector': mgmt_labels
             }
 
@@ -357,7 +364,7 @@ class KubernetesConnector(ContainerConnector):
         """
         k8s_core_v1 = client.CoreV1Api()
         resp = k8s_core_v1.list_namespaced_service(
-                namespace=self.namespace)
+            namespace=self.namespace)
         result = []
 
         # labels
@@ -385,6 +392,7 @@ class KubernetesConnector(ContainerConnector):
         Headless Service: multiple endpoints
         Service: single endpoint
         """
+
         def _parse_subsets(subsets):
             addrs = []
             port = None
@@ -417,8 +425,8 @@ class KubernetesConnector(ContainerConnector):
         k8s_core_v1 = client.CoreV1Api()
         try:
             resp = k8s_core_v1.read_namespaced_endpoints(
-                    name=svc_name,
-                    namespace=self.namespace)
+                name=svc_name,
+                namespace=self.namespace)
             endpoints = _parse_subsets(resp.subsets)
             # _LOGGER.debug(f'[_get_endpoints] {endpoints}')
             return endpoints
@@ -459,7 +467,7 @@ class KubernetesConnector(ContainerConnector):
             'labels': labels,
             'name': service.metadata.name,
             'status': self._update_state_machine(service.status)
-            }
+        }
 
         if self.headless:
             endpoints = self._get_endpoints(service.metadata.name)

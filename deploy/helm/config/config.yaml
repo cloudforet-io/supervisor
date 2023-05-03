@@ -53,11 +53,11 @@ GLOBAL:
       queue: default_q
       interval: 20
 
-  WORKERS:
-    worker:
-      backend: spaceone.core.scheduler.worker.BaseWorker
-      queue: default_q
-      pool: 1
+#  WORKERS:
+#    worker:
+#      backend: spaceone.core.scheduler.worker.BaseWorker
+#      queue: default_q
+#      pool: 1
 
 #  NAME: root
 #  HOSTNAME: root-supervisor.svc.cluster.local
