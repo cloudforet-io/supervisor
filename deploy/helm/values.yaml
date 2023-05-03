@@ -72,7 +72,7 @@ sidecar:
         #     limits:
         #         memory: "256Mi"
         #         cpu: "50m"
-
+    scheduler: {}
 
 ##########################
 # Local volumes
