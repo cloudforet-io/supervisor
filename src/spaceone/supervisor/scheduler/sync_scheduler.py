@@ -60,7 +60,12 @@ class SyncScheduler(IntervalScheduler):
 
             metadata = {
                 'token': token,
-                'domain_id': domain_id
+                'domain_id': domain_id,
+                'service': 'supervisor',
+                'resource': 'Supervisor',
+                'verb': 'sync_plugins'
+
+
             }
 
             params = {
