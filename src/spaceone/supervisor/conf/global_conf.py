@@ -87,14 +87,6 @@ SCHEDULERS = {
     # }
 }
 
-# Define worker options
-WORKERS = {
-    'worker': {
-        'backend': 'spaceone.core.scheduler.worker.BaseWorker',
-        'queue': 'default_q'
-    }
-}
-
 # This value should be global unique
 # Update at config.yml
 NAME = ""
