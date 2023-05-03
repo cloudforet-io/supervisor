@@ -45,7 +45,6 @@ class KubernetesConnector(ContainerConnector):
         try:
             k8s_config.load_incluster_config()
             conf = client.Configuration()
-            conf.proxy = "http://localhost:8080"
         except Exception as e:
             _LOGGER.debug(f'[KubernetesConnector] {e}')
             raise ERROR_CONFIGURATION(key='kubernetes configuration')
