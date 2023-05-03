@@ -65,7 +65,6 @@ spec:
 {{- if .Values.global.common_env }}
 {{- toYaml .Values.global.common_env | nindent 12 }}
 {{- end }}
-        -
         - name: redis
           image: {{ .Values.sidecar.redis.image.name }}:{{ .Values.sidecar.redis.image.version }}
 {{- if .Values.sidecar.redis.resources }}
