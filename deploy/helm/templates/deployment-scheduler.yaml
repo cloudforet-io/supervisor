@@ -34,19 +34,6 @@ spec:
       {{- end }}
 {{- end}}
       containers:
-        - name: redis
-          image: {{ .Values.sidecar.redis.image.name }}:{{ .Values.sidecar.redis.image.version }}
-{{- if .Values.sidecar.redis.resources }}
-          resources:
-          {{- toYaml .Values.sidecar.redis.resources | nindent 12 }}
-{{- end }}
-          ports:
-            - containerPort: 6379
-{{- if .Values.global.common_env }}
-          env:
-{{- toYaml .Values.global.common_env | nindent 12 }}
-{{- end }}
-
         - name: {{ .Values.name }}-scheduler
           image: {{ .Values.image.name }}:{{ .Values.image.version }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -78,14 +65,18 @@ spec:
 {{- if .Values.global.common_env }}
 {{- toYaml .Values.global.common_env | nindent 12 }}
 {{- end }}
-
-{{- if .Values.sidecar.scheduler }}
-{{- toYaml .Values.sidecar.scheduler | nindent 8 }}
+        -
+        - name: redis
+          image: {{ .Values.sidecar.redis.image.name }}:{{ .Values.sidecar.redis.image.version }}
+{{- if .Values.sidecar.redis.resources }}
+          resources:
+          {{- toYaml .Values.sidecar.redis.resources | nindent 12 }}
 {{- end }}
-
-
-{{- if .Values.global.supervisor.sidecar }}
-{{- toYaml .Values.global.supervisor.sidecar | nindent 8 }}
+          ports:
+            - containerPort: 6379
+{{- if .Values.global.common_env }}
+          env:
+{{- toYaml .Values.global.common_env | nindent 12 }}
 {{- end }}
 
       volumes:
