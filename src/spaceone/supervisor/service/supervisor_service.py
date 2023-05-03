@@ -15,6 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SUPERVISOR_SYNC_EXPIRE_TIME = 600
 
+
 @authentication_handler
 @authorization_handler
 @event_handler
@@ -244,14 +245,14 @@ class SupervisorService(BaseService):
         # - image_uri
         # based on image, version, contact to repository API
         image_uri = "%s/%s:%s" % (
-                plugin_info.registry_url,
-                plugin_info.image, version)
+            plugin_info.registry_url,
+            plugin_info.image, version)
 
         labels = {
             'spaceone.supervisor.name': params['name'],
             'spaceone.supervisor.plugin_id': params['plugin_id'],
             'spaceone.supervisor.domain_id': params['domain_id'],
-            #'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
+            # 'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
             'spaceone.supervisor.plugin.image': plugin_info.image,
             'spaceone.supervisor.plugin.version': params['version'],
             'spaceone.supervisor.plugin.service_type': plugin_info.service_type
@@ -290,8 +291,8 @@ class SupervisorService(BaseService):
 
         """
         result_data = self._supervisor_mgr.delete_plugin(
-                                    params['plugin_id'],
-                                    params['version'])
+            params['plugin_id'],
+            params['version'])
         # _LOGGER.debug(f'[delete_plugin] result: {result_data}')
         return result_data
 
@@ -311,7 +312,8 @@ class SupervisorService(BaseService):
             _LOGGER.debug(f'[_get_lock] {key}, {e}')
             return False
 
-    def _set_lock(self, domain_id, name):
+    @staticmethod
+    def _set_lock(domain_id, name):
         try:
             key = f"supervisor:{domain_id}:{name}"
             return cache.set(key, 1, expire=SUPERVISOR_SYNC_EXPIRE_TIME)
@@ -319,7 +321,8 @@ class SupervisorService(BaseService):
             _LOGGER.debug(f'[_set_lock] {key}, {e}')
             return False
 
-    def _release_lock(self, domain_id, name):
+    @staticmethod
+    def _release_lock(domain_id, name):
         try:
             key = f"supervisor:{domain_id}:{name}"
             return cache.delete(key)
