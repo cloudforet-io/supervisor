@@ -24,8 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class SupervisorManager(BaseManager):
-    def __init__(self, transaction):
-        super().__init__(transaction)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # container API backend
         self.backend = config.get_global('BACKEND')
         connectors_conf = config.get_global('CONNECTORS')

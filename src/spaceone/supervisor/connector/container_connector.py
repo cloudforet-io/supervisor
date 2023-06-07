@@ -21,8 +21,8 @@ from spaceone.core.error import ERROR_NOT_IMPLEMENTED
 
 
 class ContainerConnector(BaseConnector):
-    def __init__(self, transaction, config=None, **kwargs):
-        super().__init__(transaction, config, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def search(self, filters):
         raise ERROR_NOT_IMPLEMENTED(name='search')

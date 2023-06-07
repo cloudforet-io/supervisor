@@ -17,8 +17,8 @@ SUPERVISOR_SYNC_EXPIRE_TIME = 600
 
 
 class SupervisorService(BaseService):
-    def __init__(self, metadata):
-        super().__init__(metadata)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._supervisor_mgr: SupervisorManager = self.locator.get_manager('SupervisorManager')
         self._plugin_service_mgr: PluginServiceManager = self.locator.get_manager('PluginServiceManager')
 

@@ -34,8 +34,8 @@ ENDPOINT_INTERVAL = 10
 
 class KubernetesConnector(ContainerConnector):
 
-    def __init__(self, transaction, config=None, **kwargs):
-        super().__init__(transaction, config, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         _LOGGER.debug("[KubernetesConnector] config: %s" % self.config)
         self.headless = self.config.get('headless', False)
         self.node_selector = self.config.get('nodeSelector', {})
