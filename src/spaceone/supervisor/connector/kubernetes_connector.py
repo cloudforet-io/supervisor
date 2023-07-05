@@ -431,7 +431,7 @@ class KubernetesConnector(ContainerConnector):
             # _LOGGER.debug(f'[_get_endpoints] {endpoints}')
             return endpoints
         except Exception as e:
-            _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}')
+            _LOGGER.error(f'[_get_endpoints] failed to get endpoints: {e}', exc_info=True)
             return []
 
     def _get_plugin_info_from_service(self, service):
