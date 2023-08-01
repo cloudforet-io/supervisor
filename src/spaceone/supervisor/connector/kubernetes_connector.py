@@ -397,7 +397,7 @@ class KubernetesConnector(ContainerConnector):
             subsets = response.subsets
 
             if subsets is None:
-                _LOGGER.debug(f'[_get_endpoints] response: {response}')
+                _LOGGER.debug(f'[_get_endpoints] subsets is None : {response.metadata.name}')
                 return []
 
             addrs = []
