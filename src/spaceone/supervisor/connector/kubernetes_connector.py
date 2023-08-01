@@ -393,7 +393,13 @@ class KubernetesConnector(ContainerConnector):
         Service: single endpoint
         """
 
-        def _parse_subsets(subsets):
+        def _parse_subsets(response):
+            subsets = response.subsets
+
+            if subsets is None:
+                _LOGGER.debug(f'[_get_endpoints] response: {response}')
+                return []
+
             addrs = []
             port = None
             endpoints = []
@@ -424,10 +430,10 @@ class KubernetesConnector(ContainerConnector):
 
         k8s_core_v1 = client.CoreV1Api()
         try:
-            resp = k8s_core_v1.read_namespaced_endpoints(
+            response = k8s_core_v1.read_namespaced_endpoints(
                 name=svc_name,
                 namespace=self.namespace)
-            endpoints = _parse_subsets(resp.subsets)
+            endpoints = _parse_subsets(response)
             # _LOGGER.debug(f'[_get_endpoints] {endpoints}')
             return endpoints
         except Exception as e:
