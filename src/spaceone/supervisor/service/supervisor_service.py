@@ -238,7 +238,7 @@ class SupervisorService(BaseService):
         version = params['version']
         domain_id = params['domain_id']
         plugin_info = self._supervisor_mgr.get_plugin_from_repository(plugin_id, domain_id)
-        # _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
+        _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
         # - image_uri
         # based on image, version, contact to repository API
         image_uri = "%s/%s:%s" % (
