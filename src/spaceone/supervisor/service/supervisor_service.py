@@ -238,7 +238,7 @@ class SupervisorService(BaseService):
         version = params['version']
         domain_id = params['domain_id']
         plugin_info = self._supervisor_mgr.get_plugin_from_repository(plugin_id, domain_id)
-        _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
+        # _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
         # - image_uri
         # based on image, version, contact to repository API
         image_uri = "%s/%s:%s" % (
@@ -255,7 +255,7 @@ class SupervisorService(BaseService):
             'spaceone.supervisor.plugin.service_type': plugin_info.service_type
         }
 
-        if image_pull_secrets := plugin_info.registry_config.get('image_pull_secrets'):
+        if image_pull_secrets := plugin_info.registry_config.image_pull_secrets:
             labels.update({'spaceone.supervisor.plugin.image_pull_secrets': image_pull_secrets})
 
         # Determine port mapping
