@@ -254,6 +254,10 @@ class SupervisorService(BaseService):
             'spaceone.supervisor.plugin.version': params['version'],
             'spaceone.supervisor.plugin.service_type': plugin_info.service_type
         }
+
+        if image_pull_secrets := plugin_info.registry_config.get('image_pull_secrets'):
+            labels.update({'spaceone.supervisor.plugin.image_pull_secrets': image_pull_secrets})
+
         # Determine port mapping
         host_port = self._supervisor_mgr.find_host_port()
         _LOGGER.debug("Choose Host Port: %d" % host_port)

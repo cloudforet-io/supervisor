@@ -245,6 +245,9 @@ class KubernetesConnector(ContainerConnector):
         if _image_pull_secrets := self.config.get('imagePullSecrets'):
             deployment['spec']['template']['spec']['imagePullSecrets'] = _image_pull_secrets
 
+        if _image_pull_secrets := labels.get('spaceone.supervisor.plugin.image_pull_secrets'):
+            deployment['spec']['template']['spec']['imagePullSecrets'] = [{"name": _image_pull_secrets}]
+
         if _volumes := self.config.get('volumes'):
             deployment['spec']['template']['spec']['volumes'] = _volumes
 
