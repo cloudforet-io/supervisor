@@ -22,9 +22,6 @@ CONNECTORS = {
         # "end_port": 50090,
         # "namespace": "supervisor",
         # "service_account": "service_account_name",
-        # "imagePullSecrets": [
-        #     {"name": "credentials"}
-        # ],
         # "env": [
         #     {"name": "HTTP_PROXY", "value": "http://***"},
         #     {...}
@@ -39,6 +36,10 @@ CONNECTORS = {
         #         "cpu": "500m"
         #     }
         # },
+        # "volumes": [
+        # ],
+        # "volume_mounts": [
+        # ],
         # "headless": True,
         # "replica": {
         #    "inventory.collector": 4
