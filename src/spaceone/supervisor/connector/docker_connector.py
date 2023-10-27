@@ -87,7 +87,7 @@ class DockerConnector(ContainerConnector):
             plugins_info.append(plugin)
         return {'results': plugins_info, 'total_count': count}
 
-    def run(self, image, labels, ports, name):
+    def run(self, image, labels, ports, name, registry_config):
         """ Make sure, custom label is exist
         custom labels:
          - spaceone.supervisor.plugin_id

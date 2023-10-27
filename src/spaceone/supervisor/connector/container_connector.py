@@ -27,7 +27,7 @@ class ContainerConnector(BaseConnector):
     def search(self, filters):
         raise ERROR_NOT_IMPLEMENTED(name='search')
 
-    def run(self, image, labels, ports, name):
+    def run(self, image, labels, ports, name, registry_config):
         # Create Container
         raise ERROR_NOT_IMPLEMENTED(name='run')
 
