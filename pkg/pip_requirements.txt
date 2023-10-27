@@ -1,7 +1,4 @@
+spaceone-api
 docker
 kubernetes
-redis
-python-consul
 hashids
-spaceone-core
-spaceone-api

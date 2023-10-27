@@ -31,8 +31,6 @@ setup(
         'spaceone-api',
         'docker',
         'kubernetes',
-        'redis',
-        'python-consul',
         'hashids'
     ],
     zip_safe=False,
