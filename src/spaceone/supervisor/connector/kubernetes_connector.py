@@ -74,7 +74,7 @@ class KubernetesConnector(ContainerConnector):
 
         return {'results': plugins_info, 'total_count': count}
 
-    def run(self, image, labels, ports, name):
+    def run(self, image, labels, ports, name, registry_config):
         """ Make sure, custom label is exist
         custom labels:
          - spaceone.supervisor.plugin_id
@@ -89,7 +89,7 @@ class KubernetesConnector(ContainerConnector):
         _LOGGER.debug(f'[run] create kubernetes deployment')
 
         resp_svc = self._get_service(labels, name, ports)
-        resp_dep = self._get_deployment(labels, name, image)
+        resp_dep = self._get_deployment(labels, name, image, registry_config)
 
         try:
             # Update endpoints, if needed
@@ -143,7 +143,7 @@ class KubernetesConnector(ContainerConnector):
         else:
             return self.NUM_OF_REPLICAS
 
-    def _get_deployment(self, labels, name, image):
+    def _get_deployment(self, labels, name, image, registry_config):
         """ Create or get Deployment
 
         Args:
@@ -159,7 +159,7 @@ class KubernetesConnector(ContainerConnector):
 
         # Create Deployment
         try:
-            deployment = self._create_deployment(image, name, labels)
+            deployment = self._create_deployment(image, name, labels, registry_config)
             resp_dep = k8s_apps_v1.create_namespaced_deployment(
                 body=deployment, namespace=self.namespace)
 
@@ -180,7 +180,7 @@ class KubernetesConnector(ContainerConnector):
             _LOGGER.debug(f'[_get_deployment] failed to create deployment, {e}')
             raise ERROR_CONFIGURATION(key='kubernetes configuration')
 
-    def _create_deployment(self, image, name, labels):
+    def _create_deployment(self, image, name, labels, registry_config):
         """ Create deployment content (dictionary)
 
         Args:
@@ -242,10 +242,7 @@ class KubernetesConnector(ContainerConnector):
         if _service_account_name := self.config.get('service_account'):
             deployment['spec']['template']['spec']['serviceAccountName'] = _service_account_name
 
-        if _image_pull_secrets := self.config.get('imagePullSecrets'):
-            deployment['spec']['template']['spec']['imagePullSecrets'] = _image_pull_secrets
-
-        if _image_pull_secrets := labels.get('spaceone.supervisor.plugin.image_pull_secrets'):
+        if _image_pull_secrets := registry_config.image_pull_secret:
             deployment['spec']['template']['spec']['imagePullSecrets'] = [{"name": _image_pull_secrets}]
 
         if _volumes := self.config.get('volumes'):

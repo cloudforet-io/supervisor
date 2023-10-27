@@ -245,6 +245,8 @@ class SupervisorService(BaseService):
             plugin_info.registry_url,
             plugin_info.image, version)
 
+        registry_config = plugin_info.registry_config
+
         labels = {
             'spaceone.supervisor.name': params['name'],
             'spaceone.supervisor.plugin_id': params['plugin_id'],
@@ -254,9 +256,6 @@ class SupervisorService(BaseService):
             'spaceone.supervisor.plugin.version': params['version'],
             'spaceone.supervisor.plugin.service_type': plugin_info.service_type
         }
-
-        if image_pull_secrets := getattr(plugin_info.registry_config, 'image_pull_secrets', None):
-            labels.update({'spaceone.supervisor.plugin.image_pull_secrets': image_pull_secrets})
 
         # Determine port mapping
         host_port = self._supervisor_mgr.find_host_port()
@@ -275,7 +274,7 @@ class SupervisorService(BaseService):
         endpoint = self._supervisor_mgr.get_plugin_endpoint(name, params['hostname'], host_port)
         labels.update({'spaceone.supervisor.plugin.endpoint': endpoint})
 
-        result_data = self._supervisor_mgr.install_plugin(image_uri, labels, ports, name)
+        result_data = self._supervisor_mgr.install_plugin(image_uri, labels, ports, name, registry_config)
         # _LOGGER.debug(f'[install_plugin] installed plugin info: {result_data}')
         # update endpoint
         return result_data
