@@ -245,14 +245,14 @@ class KubernetesConnector(ContainerConnector):
         if _image_pull_secrets := registry_config.image_pull_secret:
             deployment['spec']['template']['spec']['imagePullSecrets'] = [{"name": _image_pull_secrets}]
 
-        if _volumes := self.config.get('volumes'):
-            deployment['spec']['template']['spec']['volumes'] = _volumes
-
         if _container_env := self.config.get('env'):
             deployment['spec']['template']['spec']['containers'][0]['env'] = _container_env
 
         if _container_resources := self.config.get('resources'):
             deployment['spec']['template']['spec']['containers'][0]['resources'] = _container_resources
+
+        if _volumes := self.config.get('volumes'):
+            deployment['spec']['template']['spec']['volumes'] = _volumes
 
         if _container_volume_mounts := self.config.get('volume_mounts'):
             deployment['spec']['template']['spec']['containers'][0]['volumeMounts'] = _container_volume_mounts
