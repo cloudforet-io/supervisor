@@ -245,10 +245,7 @@ class SupervisorService(BaseService):
             plugin_info.registry_url,
             plugin_info.image, version)
 
-        _LOGGER.debug(f'[install_plugin] check plugin_info type: {type(plugin_info)}')
-        _LOGGER.debug(f'[install_plugin] check plugin_info.registry_config type: {type(plugin_info)}')
         registry_config = dict(plugin_info.registry_config)
-        _LOGGER.debug(f'[install_plugin] check plugin_info.registry_config dict type: {registry_config}')
 
         labels = {
             'spaceone.supervisor.name': params['name'],
