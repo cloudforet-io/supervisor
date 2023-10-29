@@ -242,7 +242,7 @@ class KubernetesConnector(ContainerConnector):
         if _service_account_name := self.config.get('service_account'):
             deployment['spec']['template']['spec']['serviceAccountName'] = _service_account_name
 
-        if _image_pull_secrets := registry_config.image_pull_secret:
+        if _image_pull_secrets := registry_config.get('image_pull_secrets'):
             deployment['spec']['template']['spec']['imagePullSecrets'] = [{"name": _image_pull_secrets}]
 
         if _container_env := self.config.get('env'):
