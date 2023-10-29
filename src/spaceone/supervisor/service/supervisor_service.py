@@ -245,8 +245,7 @@ class SupervisorService(BaseService):
             plugin_info.registry_url,
             plugin_info.image, version)
 
-        registry_config = plugin_info.registry_config.to_primative()
-        _LOGGER.debug(f'install_plugin registry_config: {registry_config}')
+        registry_config = plugin_info.registry_config
 
         labels = {
             'spaceone.supervisor.name': params['name'],
