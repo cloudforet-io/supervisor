@@ -64,8 +64,6 @@ class SyncScheduler(IntervalScheduler):
                 'service': 'supervisor',
                 'resource': 'Supervisor',
                 'verb': 'sync_plugins'
-
-
             }
 
             params = {

@@ -27,7 +27,6 @@ setup(
     license='Apache Software License',
     packages=find_packages(),
     install_requires=[
-        'spaceone-core',
         'spaceone-api',
         'docker',
         'kubernetes',
