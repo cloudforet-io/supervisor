@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  BRANCH: master
+  BRANCH_NAME: master
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.BRANCH }}
+          ref: ${{ env.BRANCH_NAME }}
           token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up QEMU
