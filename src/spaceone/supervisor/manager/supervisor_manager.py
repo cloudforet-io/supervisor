@@ -16,10 +16,14 @@
 __all__ = ["SupervisorManager"]
 
 import logging
+from typing import Union
 
 from spaceone.core import config
 from spaceone.core.manager import BaseManager
 from spaceone.core.connector.space_connector import SpaceConnector
+
+from spaceone.supervisor.connector.kubernetes_connector import KubernetesConnector
+from spaceone.supervisor.connector.docker_connector import DockerConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +49,7 @@ class SupervisorManager(BaseManager):
         r = connector.run(image_uri, labels, ports, name, registry_config)
         return r
 
-    def delete_plugin(self, plugin_id, version):
+    def delete_plugin(self, plugin_id: str, version: str):
         """Delete plugin"""
         labels = [
             f"spaceone.supervisor.plugin_id={plugin_id}",
@@ -68,7 +72,7 @@ class SupervisorManager(BaseManager):
         """Determine endpoint of plugin"""
         pass
 
-    def list_plugins_by_label(self, label):
+    def list_plugins_by_label(self, label: list) -> dict:
         """Discover plugins based on label
 
         Args:
@@ -78,8 +82,10 @@ class SupervisorManager(BaseManager):
         filters = {"label": label}
         try:
             # connector = self.locator.get_connector(self.backend, self.plugin_conf)
-            connector = self.locator.get_connector(self.backend)
-            data = connector.search(filters=filters)
+            connector: Union[
+                KubernetesConnector, DockerConnector
+            ] = self.locator.get_connector(self.backend)
+            data: dict = connector.search(filters=filters)
             return data
         except Exception as e:
             _LOGGER.error("list_plugins_by_label: %s" % filters)

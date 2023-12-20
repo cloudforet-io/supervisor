@@ -37,15 +37,16 @@ class SupervisorService(BaseService):
               - name
               - hostname
               - tags
-              - labels
+              - labels: 'list',
               - secret_key
               - domain_id
 
         """
+
         # collect plugins_info
-        result = self.discover_plugins(params["name"])
-        plugins_info = result["results"]
-        count = result["total_count"]
+        plugins = self.discover_plugins(params["name"])
+        plugins_info = plugins["results"]
+        count = plugins["total_count"]
         # _LOGGER.debug(f'[publish_supervisor] plugins_info: {plugins_info}, count: {count}')
         _LOGGER.debug(f"[publish_supervisor] count: {count}")
         result = []
@@ -80,7 +81,7 @@ class SupervisorService(BaseService):
               'hostname': str,
               'name': str,
               'tags': dict,
-              'labels': dict,
+              'labels': list,
               'domain_id': str
             }
         """
@@ -109,7 +110,7 @@ class SupervisorService(BaseService):
             plugins = self._plugin_service_mgr.list_plugins(
                 supervisor_id, hostname, domain_id
             )
-            num_of_plugins = plugins.total_count
+            num_of_plugins = plugins.get("total_count", 0)
             _LOGGER.debug(f"[sync_plugins] num of plugins: {num_of_plugins}")
         except Exception as e:
             _LOGGER.error(f"[sync_plugins] error: {e}", exc_info=True)
@@ -119,13 +120,13 @@ class SupervisorService(BaseService):
         _LOGGER.debug(f"[sync_plugins] Check Plugin State")
         # if plugin state == RE_PROVISION, delete first
         try:
-            self._check_plugin_state(plugins.results, params)
+            self._check_plugin_state(plugins.get("results", []), params)
         except Exception as e:
             _LOGGER.error(f"[sync_plugins] fail to check plugins, {e}")
 
         _LOGGER.debug(f"[sync_plugins] Install Plugins")
         try:
-            self._install_plugins(plugins.results, params)
+            self._install_plugins(plugins.get("results", []), params)
         except Exception as e:
             _LOGGER.error(f"[sync_plugins] fail to install plugins, {e}")
             self._release_lock(domain_id, name)
@@ -133,7 +134,7 @@ class SupervisorService(BaseService):
 
         _LOGGER.debug(f"[sync_plugins] Clean up Plugins")
         try:
-            self._delete_plugins(plugins.results, params)
+            self._delete_plugins(plugins.get("results", []), params)
         except Exception as e:
             _LOGGER.error(f"[sync_plugins] fail to delete plugins, {e}")
             self._release_lock(domain_id, name)
@@ -150,7 +151,7 @@ class SupervisorService(BaseService):
         self._release_lock(domain_id, name)
         return True
 
-    def _check_plugin_state(self, plugins, params):
+    def _check_plugin_state(self, plugins: list, params: dict):
         """Check plugin state first
         if state == RE_PROVISIONING, delete plugin first
         """
@@ -304,14 +305,21 @@ class SupervisorService(BaseService):
         # _LOGGER.debug(f'[delete_plugin] result: {result_data}')
         return result_data
 
-    def discover_plugins(self, name):
-        """Discover plugins"""
-        label = f"spaceone.supervisor.name={name}"
+    def discover_plugins(self, name: str) -> dict:
+        """Discover plugins
+        Returns:
+            plugins (dict): {
+                'total_count': int,
+                'results': list
+            }
+        """
+        label = [f"spaceone.supervisor.name={name}"]
         # _LOGGER.debug(f'[discover_plugins] label: {label}')
         plugins = self._supervisor_mgr.list_plugins_by_label(label)
         return plugins
 
-    def _get_lock(self, domain_id, name):
+    @staticmethod
+    def _get_lock(domain_id, name):
         try:
             key = f"supervisor:{domain_id}:{name}"
             return cache.get(key)
@@ -321,8 +329,8 @@ class SupervisorService(BaseService):
 
     @staticmethod
     def _set_lock(domain_id, name):
+        key = f"supervisor:{domain_id}:{name}"
         try:
-            key = f"supervisor:{domain_id}:{name}"
             return cache.set(key, 1, expire=SUPERVISOR_SYNC_EXPIRE_TIME)
         except Exception as e:
             _LOGGER.debug(f"[_set_lock] {key}, {e}")

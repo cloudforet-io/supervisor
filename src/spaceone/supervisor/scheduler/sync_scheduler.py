@@ -23,62 +23,61 @@ from spaceone.supervisor.service.supervisor_service import SupervisorService
 
 _LOGGER = logging.getLogger(__name__)
 
-
-__all__ = ['SyncScheduler']
+__all__ = ["SyncScheduler"]
 
 
 def _get_domain_id_from_token(token):
     decoded_token = JWTUtil.unverified_decode(token)
-    return decoded_token['did']
+    return decoded_token["did"]
 
 
 class SyncScheduler(IntervalScheduler):
-    """ SyncScheduler
-    """
+    """SyncScheduler"""
+
     @staticmethod
     def get_task_metadata_and_params():
         try:
-            name = config.get_global('NAME', '')
-            hostname = config.get_global('HOSTNAME', '')
-            token = config.get_global('TOKEN', '')
+            name = config.get_global("NAME", "")
+            hostname = config.get_global("HOSTNAME", "")
+            token = config.get_global("TOKEN", "")
 
-            if token == '':
+            if token == "":
                 _LOGGER.error("TOKEN is not configured")
-                raise ERROR_CONFIGURATION(key='TOKEN')
+                raise ERROR_CONFIGURATION(key="TOKEN")
 
-            if name == '':
+            if name == "":
                 _LOGGER.error("name is not configured!")
-                raise ERROR_CONFIGURATION(key='NAME')
+                raise ERROR_CONFIGURATION(key="NAME")
 
-            if hostname == '':
+            if hostname == "":
                 _LOGGER.error("hostname is not configured!")
-                raise ERROR_CONFIGURATION(key='HOSTNAME')
+                raise ERROR_CONFIGURATION(key="HOSTNAME")
 
-            tags = config.get_global('TAGS', {})
-            labels = config.get_global('LABELS', {})
+            tags = config.get_global("TAGS", {})
+            labels = config.get_global("LABELS", [])
             domain_id = _get_domain_id_from_token(token)
 
             metadata = {
-                'token': token,
-                'domain_id': domain_id,
-                'service': 'supervisor',
-                'resource': 'Supervisor',
-                'verb': 'sync_plugins'
+                "token": token,
+                "domain_id": domain_id,
+                "service": "supervisor",
+                "resource": "Supervisor",
+                "verb": "sync_plugins",
             }
 
             params = {
-                'name': name,
-                'hostname': hostname,
-                'tags': tags,
-                'labels': labels,
-                'domain_id': domain_id
+                "name": name,
+                "hostname": hostname,
+                "tags": tags,
+                "labels": labels,
+                "domain_id": domain_id,
             }
 
             return metadata, params
 
         except Exception as e:
-            _LOGGER.error(f'[check_global_configuration] error: {e}', exc_info=True)
-            raise ERROR_UNKNOWN(message=f'[check_global_configuration] error: {e}')
+            _LOGGER.error(f"[check_global_configuration] error: {e}", exc_info=True)
+            raise ERROR_UNKNOWN(message=f"[check_global_configuration] error: {e}")
 
     def create_task(self):
         metadata, params = self.get_task_metadata_and_params()

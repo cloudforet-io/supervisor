@@ -30,12 +30,15 @@ class PluginServiceManager(BaseManager):
         super().__init__(*args, **kwargs)
         self.plugin_connector = SpaceConnector(service="plugin")
 
-    def publish_supervisor(self, params):
+    def publish_supervisor(self, params: dict) -> dict:
         """Get connector for plugin
 
         connector is gRPC client for Plugin Service
         """
         _LOGGER.debug("Manager:publish_supervisor")
+
+        # todo modify api and model
+        del params["labels"]
         response = self.plugin_connector.dispatch("Supervisor.publish", params)
         return response
 
