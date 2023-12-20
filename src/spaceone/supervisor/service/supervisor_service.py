@@ -245,18 +245,22 @@ class SupervisorService(BaseService):
         # _LOGGER.debug(f'[install_plugin] plugin_info: {plugin_info}')
         # - image_uri
         # based on image, version, contact to repository API
-        image_uri = "%s/%s:%s" % (plugin_info.registry_url, plugin_info.image, version)
+        image_uri = "%s/%s:%s" % (
+            plugin_info["registry_url"],
+            plugin_info["image"],
+            version,
+        )
 
-        registry_config = dict(plugin_info.registry_config)
+        registry_config = plugin_info["registry_config"]
 
         labels = {
             "spaceone.supervisor.name": params["name"],
             "spaceone.supervisor.plugin_id": params["plugin_id"],
             "spaceone.supervisor.domain_id": params["domain_id"],
             # 'spaceone.supervisor.plugin.plugin_name': plugin_info.name,
-            "spaceone.supervisor.plugin.image": plugin_info.image,
+            "spaceone.supervisor.plugin.image": plugin_info["image"],
             "spaceone.supervisor.plugin.version": params["version"],
-            "spaceone.supervisor.plugin.service_type": plugin_info.service_type,
+            "spaceone.supervisor.plugin.resource_type": plugin_info["resource_type"],
         }
 
         # Determine port mapping

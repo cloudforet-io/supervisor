@@ -93,7 +93,7 @@ class SupervisorManager(BaseManager):
             return {"total_count": 0, "results": []}
 
     @staticmethod
-    def get_plugin_from_repository(plugin_id: str, domain_id: str):
+    def get_plugin_from_repository(plugin_id: str, domain_id: str) -> dict:
         """Contact to repository service
         Find plugin_info
 
