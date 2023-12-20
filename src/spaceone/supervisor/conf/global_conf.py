@@ -1,23 +1,28 @@
-CACHES = {
-
-}
+CACHES = {}
 
 CONNECTORS = {
-    'PluginConnector': {
+    "SpaceConnector": {
+        "backend": "spaceone.core.connector.space_connector:SpaceConnector",
+        "endpoints": {
+            "plugin": "grpc://plugin:50051",
+            "repository": "grpc://repository:50051",
+        },
+    },
+    "PluginConnector": {
         # 'endpoint': {
         #    'v1': 'grpc://plugin:50051'
         # }
     },
-    'RepositoryConnector': {
+    "RepositoryConnector": {
         # 'endpoint': {
         #    'v1': 'grpc://repository:50051'
         # }
     },
-    'DockerConnector': {
+    "DockerConnector": {
         # "start_port": 50060,
         # "end_port": 50090
     },
-    'KubernetesConnector': {
+    "KubernetesConnector": {
         # "start_port": 50060,
         # "end_port": 50090,
         # "namespace": "supervisor",
@@ -47,7 +52,7 @@ CONNECTORS = {
         # "nodeSelector": {
         #     "Category": "supervisor"
         # }
-    }
+    },
 }
 
 HANDLERS = {
@@ -62,7 +67,6 @@ HANDLERS = {
     # }],
     # 'event': []
 }
-
 
 # Define Queue options
 QUEUES = {
@@ -110,4 +114,3 @@ TOKEN_INFO = {}
 # This is for unittest
 ENDPOINTS = {}
 LOG = {}
-

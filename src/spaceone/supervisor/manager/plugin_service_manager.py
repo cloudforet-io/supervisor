@@ -14,12 +14,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-__all__ = ['PluginServiceManager']
+__all__ = ["PluginServiceManager"]
 
 import logging
 
 from spaceone.core import config
 from spaceone.core.manager import BaseManager
+from spaceone.core.connector.space_connector import SpaceConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,22 +28,27 @@ _LOGGER = logging.getLogger(__name__)
 class PluginServiceManager(BaseManager):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.plugin_connector = SpaceConnector(service="plugin")
 
     def publish_supervisor(self, params):
-        """ Get connector for plugin
+        """Get connector for plugin
 
         connector is gRPC client for Plugin Service
         """
         _LOGGER.debug("Manager:publish_supervisor")
-        connector = self.locator.get_connector('PluginConnector')
-        r = connector.publish(params)
-        return r
+        response = self.plugin_connector.dispatch("Supervisor.publish", params)
+        return response
 
     def list_plugins(self, supervisor_id, hostname, domain_id):
-        """ Sync Plugins from Plugin Service
-        """
-        connector = self.locator.get_connector('PluginConnector')
-        _LOGGER.debug("[supervisor_manager] list_plugin:%s" % hostname)
-        r = connector.list_plugins_by_hostname(supervisor_id, hostname, domain_id)
-        return r
+        """Sync Plugins from Plugin Service"""
+        token = config.get_global("TOKEN")
+        params = {"domain_id": domain_id}
+        if supervisor_id:
+            params["supervisor_id"] = supervisor_id
+        if hostname:
+            params["hostname"] = hostname
 
+        response = self.plugin_connector.dispatch(
+            "Supervisor.list_plugins", params, token=token
+        )
+        return response

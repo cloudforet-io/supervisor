@@ -13,12 +13,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-__all__ = ['SupervisorManager']
+__all__ = ["SupervisorManager"]
 
 import logging
 
 from spaceone.core import config
 from spaceone.core.manager import BaseManager
+from spaceone.core.connector.space_connector import SpaceConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,18 +28,17 @@ class SupervisorManager(BaseManager):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # container API backend
-        self.backend = config.get_global('BACKEND')
-        connectors_conf = config.get_global('CONNECTORS')
+        self.backend = config.get_global("BACKEND")
+        connectors_conf = config.get_global("CONNECTORS")
         plugin_conf = connectors_conf[self.backend]
-        self.port_range = (plugin_conf['start_port'], plugin_conf['end_port'])
+        self.port_range = (plugin_conf["start_port"], plugin_conf["end_port"])
 
     def install_plugin(self, image_uri, labels, ports, name, registry_config):
-        """ Install Plugin
-        """
+        """Install Plugin"""
         # determine connector name
         _LOGGER.debug(
-            f'[install_plugin] image_uri: {image_uri}, labels: {labels}, ports: {ports}, name: {name},'
-            f' registry_config: {registry_config}'
+            f"[install_plugin] image_uri: {image_uri}, labels: {labels}, ports: {ports}, name: {name},"
+            f" registry_config: {registry_config}"
         )
         # connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
         connector = self.locator.get_connector(self.backend)
@@ -46,38 +46,36 @@ class SupervisorManager(BaseManager):
         return r
 
     def delete_plugin(self, plugin_id, version):
-        """ Delete plugin
-        """
+        """Delete plugin"""
         labels = [
-            f'spaceone.supervisor.plugin_id={plugin_id}',
-            f'spaceone.supervisor.plugin.version={version}'
+            f"spaceone.supervisor.plugin_id={plugin_id}",
+            f"spaceone.supervisor.plugin.version={version}",
         ]
 
         target_plugins = self.list_plugins_by_label(labels)
-        _LOGGER.debug(f'[delete_plugin] labels: {labels}, target: {target_plugins}')
+        _LOGGER.debug(f"[delete_plugin] labels: {labels}, target: {target_plugins}")
         # determine connector
         # connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
         connector = self.locator.get_connector(self.backend)
         deleted_count = 0
-        for plugin in target_plugins['results']:
-            _LOGGER.debug(f'[delete_plugin] plugin: {plugin}')
+        for plugin in target_plugins["results"]:
+            _LOGGER.debug(f"[delete_plugin] plugin: {plugin}")
             connector.stop(plugin)
             deleted_count += 1
         return deleted_count
 
     def create_endpoint(self, hostname):
-        """ Determine endpoint of plugin
-        """
+        """Determine endpoint of plugin"""
         pass
 
     def list_plugins_by_label(self, label):
-        """ Discover plugins based on label
+        """Discover plugins based on label
 
         Args:
             label(string, label)
                 - spaceone.supervisor.name=<supervisor name>
         """
-        filters = {'label': label}
+        filters = {"label": label}
         try:
             # connector = self.locator.get_connector(self.backend, self.plugin_conf)
             connector = self.locator.get_connector(self.backend)
@@ -86,21 +84,23 @@ class SupervisorManager(BaseManager):
         except Exception as e:
             _LOGGER.error("list_plugins_by_label: %s" % filters)
             _LOGGER.error(e)
-            return {'total_count': 0, 'results': []}
+            return {"total_count": 0, "results": []}
 
-    def get_plugin_from_repository(self, plugin_id, domain_id):
-        """ Contact to repository service
+    @staticmethod
+    def get_plugin_from_repository(plugin_id: str, domain_id: str):
+        """Contact to repository service
         Find plugin_info
 
         """
         # Create Repository Connector
-        connector = self.locator.get_connector("RepositoryConnector")
-        plugin_info = connector.get_plugin(plugin_id, domain_id)
+        token = config.get_global("TOKEN")
+        repo_connector = SpaceConnector(service="repository", token=token)
+        params = {"plugin_id": plugin_id, "domain_id": domain_id}
+        plugin_info = repo_connector.dispatch("Plugin.get", params)
         return plugin_info
 
     def find_host_port(self):
-        """ find host port for container port mapping
-        """
+        """find host port for container port mapping"""
         # connector = self.locator.get_connector(self.backend, config=self.plugin_conf)
         connector = self.locator.get_connector(self.backend)
         used_ports = connector.list_used_ports()
@@ -112,17 +112,17 @@ class SupervisorManager(BaseManager):
         return possible_ports.pop()
 
     def get_plugin_endpoint(self, name, hostname, host_port):
-        """ Find the GRPC endpoint of plugin
+        """Find the GRPC endpoint of plugin
 
         Args:
 
         Return:
             - endpoint: grpc://abc.example.com:50051
         """
-        if self.backend == 'DockerConnector':
-            endpoint = f'grpc://{hostname}:{host_port}'
-        elif self.backend == 'KubernetesConnector':
-            endpoint = f'grpc://{name}.{hostname}:{host_port}'
+        if self.backend == "DockerConnector":
+            endpoint = f"grpc://{hostname}:{host_port}"
+        elif self.backend == "KubernetesConnector":
+            endpoint = f"grpc://{name}.{hostname}:{host_port}"
         else:
-            _LOGGER.error(f'[get_plugin_endpoint] undefined backend: {self.backend}')
+            _LOGGER.error(f"[get_plugin_endpoint] undefined backend: {self.backend}")
         return endpoint
