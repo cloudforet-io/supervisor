@@ -30,49 +30,53 @@ class PluginConnector(BaseConnector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _LOGGER.debug("config: %s" % self.config)
-        if 'endpoint' not in self.config:
-            raise ERROR_WRONG_CONFIGURATION(key='endpoint')
+        if "endpoint" not in self.config:
+            raise ERROR_WRONG_CONFIGURATION(key="endpoint")
 
-        if len(self.config['endpoint']) > 1:
-            raise ERROR_WRONG_CONFIGURATION(key='too many endpoint')
+        if len(self.config["endpoint"]) > 1:
+            raise ERROR_WRONG_CONFIGURATION(key="too many endpoint")
 
-        for (k, v) in self.config['endpoint'].items():
+        for k, v in self.config["endpoint"].items():
             # parse endpoint
             e = parse_endpoint(v)
-            self.protocol = e['scheme']
-            if self.protocol == 'grpc':
+            self.protocol = e["scheme"]
+            if self.protocol == "grpc":
                 # create grpc client
-                self.client = pygrpc.client(endpoint="%s:%s" % (e['hostname'], e['port']), version=k)
-            elif self.protocol == 'http':
+                self.client = pygrpc.client(
+                    endpoint="%s:%s" % (e["hostname"], e["port"]), version=k
+                )
+            elif self.protocol == "http":
                 # TODO:
                 pass
 
     def publish(self, param):
-        """ Call Plugin.Supervisor.publish
+        """Call Plugin.Supervisor.publish
 
         Returns: SupervisorInfo
         """
         # _LOGGER.debug(param)
-        if self.protocol == 'grpc':
+        if self.protocol == "grpc":
             # Try to connect via grpc client
-            r = self.client.Supervisor.publish(param, metadata=self.transaction.get_connection_meta())
+            r = self.client.Supervisor.publish(
+                param, metadata=self.transaction.get_connection_meta()
+            )
             return r
-        elif self.protocol == 'http':
+        elif self.protocol == "http":
             raise ERROR_WRONG_CONFIGURATION(key=self.protocol)
 
     def list_plugins_by_hostname(self, supervisor_id, hostname, domain_id):
-
-        if self.protocol == 'grpc':
+        if self.protocol == "grpc":
             # Try to connect via grpc client
-            param = {'domain_id': domain_id}
+            param = {"domain_id": domain_id}
             if supervisor_id:
-                param.update({'supervisor_id': supervisor_id})
+                param.update({"supervisor_id": supervisor_id})
             if hostname:
-                param.update({'hostname': hostname})
+                param.update({"hostname": hostname})
 
             # _LOGGER.debug(f"param: {param}")
-            plugins_info = self.client.Supervisor.list_plugins(param,
-                                                               metadata=self.transaction.get_connection_meta())
+            plugins_info = self.client.Supervisor.list_plugins(
+                param, metadata=self.transaction.meta
+            )
             return plugins_info
 
         raise ERROR_WRONG_CONFIGURATION(key=self.protocol)
