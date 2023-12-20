@@ -352,7 +352,7 @@ def _is_members(plugin_info, plugins_vo):
     version = plugin_info["version"]
 
     for plugin in plugins_vo:
-        if plugin.plugin_id == plugin_id and plugin.version == version:
+        if plugin.get("plugin_id") == plugin_id and plugin.get("version") == version:
             return True
     return False
 
