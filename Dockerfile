@@ -1,4 +1,4 @@
-FROM cloudforet/python-core:1.12
+FROM cloudforet/python-core:2.0
 ARG PACKAGE_VERSION
 ENV PYTHONUNBUFFERED 1
 ENV SPACEONE_PORT 50051
@@ -21,4 +21,4 @@ RUN pip install --upgrade spaceone-api
 EXPOSE ${SPACEONE_PORT}
 
 ENTRYPOINT ["spaceone"]
-CMD ["grpc", "spaceone.supervisor", "-m", "/opt"]
+CMD ["run","grpc-server", "spaceone.supervisor", "-m", "/opt"]
