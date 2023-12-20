@@ -112,7 +112,7 @@ class SupervisorService(BaseService):
             num_of_plugins = plugins.total_count
             _LOGGER.debug(f"[sync_plugins] num of plugins: {num_of_plugins}")
         except Exception as e:
-            _LOGGER.error(f"[sync_plugins] {e}")
+            _LOGGER.error(f"[sync_plugins] error: {e}", exc_info=True)
             self._release_lock(domain_id, name)
             return False
 
