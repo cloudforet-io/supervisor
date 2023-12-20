@@ -1,6 +1,6 @@
 REMOTE_URL:
-- file:///opt/spaceone/supervisor/config/shared.yaml
-- file:///opt/spaceone/supervisor/config/application.yaml
+  - file:///opt/spaceone/supervisor/config/shared.yaml
+  - file:///opt/spaceone/supervisor/config/application.yaml
 GLOBAL:
   MAX_WORKERS: 1000
   CACHES:
@@ -22,7 +22,6 @@ GLOBAL:
       file:
         type: file
         filename: /var/log/spaceone/supervisor.log
-  HANDLERS: {}
   CONNECTORS:
     IdentityConnector:
       endpoint:
@@ -33,13 +32,13 @@ GLOBAL:
     RepositoryConnector:
       endpoint:
         v1: grpc://repository:50051
-#    KubernetesConnector:
-#        namespace: root-supervisor
-#        start_port: 50051
-#        end_port: 50052
-#        headless: true
-#        replica:
-#            inventory.collector: 4
+  #    KubernetesConnector:
+  #        namespace: root-supervisor
+  #        start_port: 50051
+  #        end_port: 50052
+  #        headless: true
+  #        replica:
+  #            inventory.collector: 4
 
   QUEUES:
     default_q:
