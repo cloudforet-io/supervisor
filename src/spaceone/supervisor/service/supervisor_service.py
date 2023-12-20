@@ -1,7 +1,6 @@
 import logging
 
 from datetime import datetime
-from google.protobuf.json_format import MessageToDict
 from hashids import Hashids
 
 from spaceone.core.error import ERROR_CONFIGURATION
@@ -156,23 +155,22 @@ class SupervisorService(BaseService):
         if state == RE_PROVISIONING, delete plugin first
         """
         for plugin in plugins:
-            dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
-            plugin_domain_id = dict_plugin["domain_id"]
-            dict_plugin.update(params)
-            dict_plugin["domain_id"] = plugin_domain_id
-            state = dict_plugin.get("state", None)
+            plugin_domain_id = plugin["domain_id"]
+            plugin.update(params)
+            plugin["domain_id"] = plugin_domain_id
+            state = plugin.get("state", None)
             # _LOGGER.debug(f'[_check_plugin_state] plugin_info: {dict_plugin}')
             if state == "RE_PROVISIONING" or state == "ERROR":
                 # _LOGGER.debug(f'[_check_plugin_state] params: {params}')
-                self.install_plugin(dict_plugin)
+                self.install_plugin(plugin)
                 delete_params = {
-                    "plugin_id": dict_plugin["plugin_id"],
-                    "version": dict_plugin["version"],
-                    "domain_id": dict_plugin["domain_id"],
+                    "plugin_id": plugin["plugin_id"],
+                    "version": plugin["version"],
+                    "domain_id": plugin["domain_id"],
                 }
                 self.delete_plugin(delete_params)
 
-    def _install_plugins(self, plugins, params):
+    def _install_plugins(self, plugins: list, params: dict):
         """Install plugin based on plugins
 
         Args:
@@ -184,16 +182,15 @@ class SupervisorService(BaseService):
 
         """
         for plugin in plugins:
-            dict_plugin = MessageToDict(plugin, preserving_proto_field_name=True)
-            _LOGGER.debug(f"[_install_plugins] dict_plugin: {dict_plugin}")
-            plugin_domain_id = dict_plugin["domain_id"]
-            dict_plugin.update(params)
-            dict_plugin["domain_id"] = plugin_domain_id
+            _LOGGER.debug(f"[_install_plugins] dict_plugin: {plugin}")
+            plugin_domain_id = plugin["domain_id"]
+            plugin.update(params)
+            plugin["domain_id"] = plugin_domain_id
             # _LOGGER.debug(f'[_install_plugins] plugin_info: {dict_plugin}')
-            if not self._exist_plugin(dict_plugin):
+            if not self._exist_plugin(plugin):
                 # _LOGGER.debug(f'[_install_plugins] params: {params}')
-                _LOGGER.debug(f"[_install_plugins] install_plugin: {dict_plugin}")
-                self.install_plugin(dict_plugin)
+                _LOGGER.debug(f"[_install_plugins] install_plugin: {plugin}")
+                self.install_plugin(plugin)
                 # _LOGGER.debug(f'[_install_plugins] installed: {params}')
 
     def _delete_plugins(self, plugins, params):
@@ -226,7 +223,7 @@ class SupervisorService(BaseService):
         return False
 
     @check_required(["name", "plugin_id", "version", "hostname", "domain_id"])
-    def install_plugin(self, params):
+    def install_plugin(self, params: dict):
         """Install Plugin based on params
 
         Args:
