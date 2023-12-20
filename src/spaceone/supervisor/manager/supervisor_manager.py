@@ -101,8 +101,9 @@ class SupervisorManager(BaseManager):
         # Create Repository Connector
         token = config.get_global("TOKEN")
         repo_connector = SpaceConnector(service="repository", token=token)
-        params = {"plugin_id": plugin_id, "domain_id": domain_id}
-        plugin_info = repo_connector.dispatch("Plugin.get", params)
+        plugin_info = repo_connector.dispatch(
+            "Plugin.get", {"plugin_id": plugin_id}, x_domain_id=domain_id
+        )
         return plugin_info
 
     def find_host_port(self):
