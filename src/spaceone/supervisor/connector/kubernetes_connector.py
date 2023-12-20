@@ -127,20 +127,20 @@ class KubernetesConnector(ContainerConnector):
             # TODO
             raise ERROR_CONFIGURATION(key="docker configuration")
 
-    def _get_replica(self, service_type, plugin_id=None):
+    def _get_replica(self, resource_type, plugin_id=None):
         _LOGGER.debug(
-            f"[_get_replica] service_type: {service_type}, plugin_id: {plugin_id}"
+            f"[_get_replica] resource_type: {resource_type}, plugin_id: {plugin_id}"
         )
 
         REPLICA_DIC = self.config.get("replica", {})
-        service_type_with_plugin_id = service_type
+        resource_type_with_plugin_id = resource_type
         if plugin_id:
-            service_type_with_plugin_id = f"{service_type}?{plugin_id}"
+            resource_type_with_plugin_id = f"{resource_type}?{plugin_id}"
 
-        if service_type_with_plugin_id in REPLICA_DIC:
-            return REPLICA_DIC[service_type_with_plugin_id]
-        elif service_type in REPLICA_DIC:
-            return REPLICA_DIC[service_type]
+        if resource_type_with_plugin_id in REPLICA_DIC:
+            return REPLICA_DIC[resource_type_with_plugin_id]
+        elif resource_type in REPLICA_DIC:
+            return REPLICA_DIC[resource_type]
         else:
             return self.NUM_OF_REPLICAS
 
@@ -204,9 +204,9 @@ class KubernetesConnector(ContainerConnector):
         # _LOGGER.debug(f'mgmt_labels: {mgmt_labels}')
         if "plugin_id" in mgmt_labels:
             plugin_id = mgmt_labels["plugin_id"]
-            NUM_OF_REPLICAS = self._get_replica(mgmt_labels["service_type"], plugin_id)
+            NUM_OF_REPLICAS = self._get_replica(mgmt_labels["resource_type"], plugin_id)
         else:
-            NUM_OF_REPLICAS = self._get_replica(mgmt_labels["service_type"])
+            NUM_OF_REPLICAS = self._get_replica(mgmt_labels["resource_type"])
 
         deployment = {
             "apiVersion": "apps/v1",
@@ -320,7 +320,7 @@ class KubernetesConnector(ContainerConnector):
         """  Example
             supervisor_name: root
             plugin_name: aws-ec2
-            service_type: inventory.collector
+            resource_type: inventory.collector
             domain_id: domain-1234
         """
         if self.headless:
@@ -540,8 +540,8 @@ class KubernetesConnector(ContainerConnector):
                 mgmt_label["plugin_id"] = v
             elif k == "spaceone.supervisor.plugin.version":
                 mgmt_label["version"] = v
-            elif k == "spaceone.supervisor.plugin.service_type":
-                mgmt_label["service_type"] = v
+            elif k == "spaceone.supervisor.plugin.resource_type":
+                mgmt_label["resource_type"] = v
         return mgmt_label
 
     @staticmethod
