@@ -17,20 +17,21 @@ import os
 from setuptools import setup, find_packages
 
 setup(
-    name='spaceone-supervisor',
-    version=os.environ.get('PACKAGE_VERSION'),
-    description='SpaceONE supervisor service',
-    long_description='',
-    url='https://www.spaceone.dev/',
-    author='MEGAZONE SpaceONE Team',
-    author_email='admin@spaceone.dev',
-    license='Apache Software License',
+    name="spaceone-supervisor",
+    version=os.environ.get("PACKAGE_VERSION"),
+    description="SpaceONE supervisor service",
+    long_description="",
+    url="https://www.spaceone.dev/",
+    author="MEGAZONE SpaceONE Team",
+    author_email="admin@spaceone.dev",
+    license="Apache Software License",
     packages=find_packages(),
     install_requires=[
-        'spaceone-api',
-        'docker',
-        'kubernetes',
-        'hashids'
+        "spaceone-core",
+        "spaceone-api",
+        "docker",
+        "kubernetes",
+        "hashids",
     ],
     zip_safe=False,
 )
